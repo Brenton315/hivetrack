@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>HiveTrack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wax:#F6ECD6;
+    --wax-deep:#EEDCB4;
+    --honey:#D98E2B;
+    --honey-dark:#B06B1A;
+    --comb:#5C3A1E;
+    --ink:#3A2A18;
+    --ink-soft:#6E5B44;
+    --line:#E3D3AC;
+    --white:#FFFDF8;
+    --good:#4C7A3D;
+    --warn:#B4402A;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--wax);color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Fraunces',serif;color:var(--comb);margin:0 0 4px;}
+  input,select,textarea,button{font-family:inherit;font-size:15px;}
+  input,select,textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+    background:var(--white);color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--honey);outline-offset:1px;}
+  label{display:block;font-size:12.5px;color:var(--ink-soft);margin:10px 0 4px;font-weight:600;}
+  button{
+    cursor:pointer;border:none;border-radius:10px;padding:11px 16px;
+    background:var(--honey);color:var(--white);font-weight:600;
+  }
+  button:hover{background:var(--honey-dark);}
+  button.secondary{background:transparent;color:var(--comb);border:1px solid var(--line);}
+  button.secondary:hover{background:var(--wax-deep);}
+  button.link{background:none;color:var(--honey-dark);padding:4px 0;text-decoration:underline;}
+  button.danger{background:transparent;color:var(--warn);border:1px solid #E3B8AC;padding:6px 10px;font-size:13px;}
+  .hidden{display:none !important;}
+  .screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:24px;width:100%;max-width:380px;}
+  .card h1{font-size:26px;}
+  .tagline{color:var(--ink-soft);font-size:13.5px;margin-bottom:18px;}
+  .toggle-row{margin-top:16px;font-size:13.5px;color:var(--ink-soft);text-align:center;}
+  .msg{margin-top:10px;font-size:13.5px;padding:8px 10px;border-radius:8px;}
+  .msg.error{background:#FBE7E2;color:var(--warn);}
+  .msg.ok{background:#E7F0E2;color:var(--good);}
+
+  #app-screen{display:none;padding-bottom:76px;}
+  header.top{
+    background:var(--comb);color:var(--wax);padding:16px 18px;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  header.top .co{font-family:'Fraunces',serif;font-size:18px;font-weight:600;}
+  header.top .who{font-size:12px;color:#D9C6A3;}
+  header.top button{background:none;color:#D9C6A3;font-size:12.5px;padding:4px 8px;text-decoration:underline;}
+
+  main{max-width:640px;margin:0 auto;padding:18px 16px 8px;}
+  .section-title{margin:4px 0 14px;}
+  .form-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px 18px;margin-bottom:18px;}
+  .form-card h3{font-size:15px;}
+  .row{display:flex;gap:10px;}
+  .row > *{flex:1;}
+  .list-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;}
+  .list-card .top-line{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .list-card .name{font-weight:600;font-size:15.5px;}
+  .list-card .meta{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .list-card .body{font-size:13.5px;color:var(--ink);margin-top:6px;line-height:1.5;}
+  .pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:100px;background:var(--wax-deep);color:var(--comb);}
+  .empty{color:var(--ink-soft);font-size:13.5px;text-align:center;padding:24px 10px;}
+
+  .dash-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;}
+  .dash-card .rank{font-size:12px;color:var(--ink-soft);font-weight:600;}
+  .dash-card .mgo{font-family:'Fraunces',serif;font-size:26px;color:var(--honey-dark);font-weight:600;}
+  .dash-card .grid{display:flex;gap:18px;margin-top:8px;flex-wrap:wrap;}
+  .dash-card .stat{font-size:13px;}
+  .dash-card .stat b{display:block;font-size:15px;color:var(--comb);}
+  .trend-up{color:var(--good);font-weight:700;}
+  .trend-down{color:var(--warn);font-weight:700;}
+  .trend-flat{color:var(--ink-soft);font-weight:700;}
+
+  nav.tabs{
+    position:fixed;bottom:0;left:0;right:0;background:var(--white);
+    border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    z-index:20;
+  }
+  nav.tabs button{
+    flex:1;background:none;color:var(--ink-soft);font-weight:600;font-size:11px;
+    padding:8px 2px;border-radius:10px;
+  }
+  nav.tabs button.active{color:var(--honey-dark);background:var(--wax-deep);}
+
+  .invite-box{background:var(--wax-deep);border:1px dashed var(--honey-dark);border-radius:10px;padding:14px;text-align:center;margin-bottom:16px;}
+  .invite-box .code{font-family:'Fraunces',serif;font-size:24px;letter-spacing:2px;color:var(--comb);font-weight:700;}
+
+  .toast{
+    position:fixed;top:16px;left:50%;transform:translateX(-50%);
+    background:var(--comb);color:var(--wax);padding:10px 18px;border-radius:100px;
+    font-size:13.5px;z-index:50;box-shadow:0 6px 18px rgba(0,0,0,.2);
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="screen">
+  <div class="card">
+    <h1>HiveTrack</h1>
+    <div class="tagline">All your beekeeping, finally in one place.</div>
+
+    <div id="signin-form">
+      <label>Email</label>
+      <input type="email" id="si-email" autocomplete="email">
+      <label>Password</label>
+      <input type="password" id="si-password" autocomplete="current-password">
+      <div style="margin-top:16px;"><button style="width:100%" onclick="doSignIn()">Log in</button></div>
+      <div class="toggle-row">New here? <button class="link" onclick="showAuthMode('signup')">Create an account</button></div>
+    </div>
+
+    <div id="signup-form" class="hidden">
+      <label>Email</label>
+      <input type="email" id="su-email" autocomplete="email">
+      <label>Password</label>
+      <input type="password" id="su-password" autocomplete="new-password">
+      <div style="margin-top:16px;"><button style="width:100%" onclick="doSignUp()">Sign up</button></div>
+      <div class="toggle-row">Already have an account? <button class="link" onclick="showAuthMode('signin')">Log in</button></div>
+    </div>
+
+    <div id="auth-msg"></div>
+  </div>
+</div>
+
+<!-- ONBOARDING SCREEN -->
+<div id="onboarding-screen" class="screen hidden">
+  <div class="card">
+    <h1>Set up your workspace</h1>
+    <div class="tagline">Create a new company, or join one with an invite code.</div>
+
+    <label>Your name</label>
+    <input type="text" id="ob-name" placeholder="e.g. Bjorn">
+
+    <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);">
+      <h3 style="font-size:14px;margin-bottom:8px;">Start a new company</h3>
+      <label>Company / operation name</label>
+      <input type="text" id="ob-company-name" placeholder="e.g. Bjorn's Bees">
+      <div style="margin-top:12px;"><button style="width:100%" onclick="createCompany()">Create company</button></div>
+    </div>
+
+    <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);">
+      <h3 style="font-size:14px;margin-bottom:8px;">Join an existing company</h3>
+      <label>Invite code</label>
+      <input type="text" id="ob-invite-code" placeholder="e.g. A1B2C3" style="text-transform:uppercase;">
+      <div style="margin-top:12px;"><button class="secondary" style="width:100%" onclick="joinCompany()">Join company</button></div>
+    </div>
+
+    <div id="onboarding-msg"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-screen">
+  <header class="top">
+    <div>
+      <div class="co" id="hdr-company">—</div>
+      <div class="who" id="hdr-user">—</div>
+    </div>
+    <button onclick="doSignOut()">Sign out</button>
+  </header>
+
+  <main>
+    <div id="tab-sites">
+      <h2 class="section-title">Sites</h2>
+      <div class="form-card">
+        <h3>Add a site</h3>
+        <label>Site name</label>
+        <input type="text" id="site-name" placeholder="e.g. Ridge Road">
+        <label>Location / description</label>
+        <input type="text" id="site-location" placeholder="e.g. 20 min north, mānuka block">
+        <div style="margin-top:12px;"><button onclick="addSite()">Add site</button></div>
+      </div>
+      <div id="sites-list"></div>
+    </div>
+
+    <div id="tab-visits" class="hidden">
+      <h2 class="section-title">Log a visit</h2>
+      <div class="form-card">
+        <label>Site</label>
+        <select id="visit-site" onchange="onVisitSiteChange()"></select>
+        <label>Hive</label>
+        <select id="visit-hive" onchange="onVisitHiveChange()"></select>
+        <div id="new-hive-row" class="hidden">
+          <label>New hive label</label>
+          <input type="text" id="new-hive-label" placeholder="e.g. Hive 7 or box colour">
+        </div>
+        <div class="row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="visit-date">
+          </div>
+          <div>
+            <label>Strength (frames of bees)</label>
+            <input type="number" step="0.5" min="0" id="visit-strength" placeholder="e.g. 6">
+          </div>
+        </div>
+        <label>Treatment</label>
+        <select id="visit-treatment">
+          <option value="">None</option>
+          <option value="Apivar">Apivar</option>
+          <option value="Bayvarol">Bayvarol</option>
+          <option value="OA-GL">OA-GL</option>
+          <option value="Other">Other</option>
+        </select>
+        <label>Feeding</label>
+        <input type="text" id="visit-feeding" placeholder="e.g. 2:1 syrup, 1 bag pollen sub">
+        <label>Notes</label>
+        <textarea id="visit-notes" rows="2" placeholder="Anything worth remembering next visit"></textarea>
+        <div style="margin-top:12px;"><button onclick="saveVisit()">Save visit</button></div>
+      </div>
+      <div id="visits-list"></div>
+    </div>
+
+    <div id="tab-yield" class="hidden">
+      <h2 class="section-title">Yield &amp; MGO</h2>
+      <div class="form-card">
+        <h3>Add a season record</h3>
+        <label>Site</label>
+        <select id="yield-site"></select>
+        <div class="row">
+          <div>
+            <label>Season</label>
+            <input type="text" id="yield-season" placeholder="e.g. 2025/26">
+          </div>
+          <div>
+            <label>Flow</label>
+            <select id="yield-flow">
+              <option value="Mānuka">Mānuka</option>
+              <option value="Rewarewa">Rewarewa</option>
+              <option value="Kānuka">Kānuka</option>
+              <option value="Pollination">Pollination</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Kg harvested</label>
+            <input type="number" step="0.1" min="0" id="yield-kg">
+          </div>
+          <div>
+            <label>MGO grade</label>
+            <input type="number" step="1" min="0" id="yield-mgo">
+          </div>
+        </div>
+        <label>Notes</label>
+        <input type="text" id="yield-notes" placeholder="Optional">
+        <div style="margin-top:12px;"><button onclick="saveYield()">Save record</button></div>
+      </div>
+      <div id="yield-list"></div>
+    </div>
+
+    <div id="tab-movements" class="hidden">
+      <h2 class="section-title">Hive movements</h2>
+      <div class="form-card">
+        <h3>Move a hive</h3>
+        <label>Hive</label>
+        <select id="move-hive"></select>
+        <label>Move to site</label>
+        <select id="move-tosite"></select>
+        <div class="row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="move-date">
+          </div>
+          <div>
+            <label>Chasing flow</label>
+            <select id="move-flow">
+              <option value="Pollination">Pollination</option>
+              <option value="Rewarewa">Rewarewa</option>
+              <option value="Kānuka">Kānuka</option>
+              <option value="Mānuka">Mānuka</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <label>Notes</label>
+        <input type="text" id="move-notes" placeholder="Optional">
+        <div style="margin-top:12px;"><button onclick="saveMovement()">Log move</button></div>
+      </div>
+      <div id="movements-list"></div>
+    </div>
+
+    <div id="tab-dashboard" class="hidden">
+      <h2 class="section-title">Dashboard</h2>
+      <div id="dashboard-list"></div>
+    </div>
+
+    <div id="tab-team" class="hidden">
+      <h2 class="section-title">Team</h2>
+      <div class="invite-box">
+        <div style="font-size:12px;color:var(--ink-soft);margin-bottom:4px;">Invite code — share to add a beekeeper</div>
+        <div class="code" id="team-invite-code">——————</div>
+      </div>
+      <div id="team-list"></div>
+    </div>
+  </main>
+
+  <nav class="tabs">
+    <button id="nav-sites" class="active" onclick="switchTab('sites')">Sites</button>
+    <button id="nav-visits" onclick="switchTab('visits')">Log Visit</button>
+    <button id="nav-yield" onclick="switchTab('yield')">Yield/MGO</button>
+    <button id="nav-movements" onclick="switchTab('movements')">Moves</button>
+    <button id="nav-dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+    <button id="nav-team" onclick="switchTab('team')">Team</button>
+  </nav>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// ============================================================
+// CONFIG — fill these in from Supabase → Settings → API
+// ============================================================
+const SUPABASE_URL = 'https://puhxlfitwbvmzlbnzrhr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1aHhsZml0d2J2bXpsYm56cmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxMjEzMDYsImV4cCI6MjEwMzY5NzMwNn0.PQFuIrpIvBnm7kGQ5EhZKrEq1YbQBQ-5Qc4biqPOn-g';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ---------- state ----------
+let currentUser = null;
+let currentCompanyId = null;
+let currentRole = null;
+let companyName = '';
+let inviteCode = '';
+let sites = [];
+let hives = [];
+let visits = [];
+let yieldRecords = [];
+let movements = [];
+let members = [];
+
+// ---------- small helpers ----------
+function $(id){ return document.getElementById(id); }
+function showScreen(name){
+  $('auth-screen').classList.toggle('hidden', name !== 'auth');
+  $('onboarding-screen').classList.toggle('hidden', name !== 'onboarding');
+  $('app-screen').style.display = (name === 'app') ? 'block' : 'none';
+}
+function toast(text){
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = text;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+function setMsg(elId, text, isError){
+  const el = $(elId);
+  if (!text){ el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="msg ${isError ? 'error' : 'ok'}">${text}</div>`;
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(d){
+  if (!d) return '';
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-NZ', { day:'numeric', month:'short', year:'numeric' });
+}
+function siteName(id){ const s = sites.find(x => x.id === id); return s ? s.name : '—'; }
+function hiveLabel(id){ const h = hives.find(x => x.id === id); return h ? h.label : '—'; }
+
+// ============================================================
+// AUTH
+// ============================================================
+window.showAuthMode = function(mode){
+  $('signin-form').classList.toggle('hidden', mode !== 'signin');
+  $('signup-form').classList.toggle('hidden', mode !== 'signup');
+  setMsg('auth-msg', '');
+};
+
+window.doSignUp = async function(){
+  const email = $('su-email').value.trim();
+  const password = $('su-password').value;
+  if (!email || !password){ setMsg('auth-msg', 'Enter an email and password.', true); return; }
+  const { error } = await supabase.auth.signUp({ email, password });
+  if (error){ setMsg('auth-msg', error.message, true); return; }
+  setMsg('auth-msg', 'Account created. If email confirmation is on, check your inbox, then log in.', false);
+  showAuthMode('signin');
+};
+
+window.doSignIn = async function(){
+  const email = $('si-email').value.trim();
+  const password = $('si-password').value;
+  if (!email || !password){ setMsg('auth-msg', 'Enter your email and password.', true); return; }
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error){ setMsg('auth-msg', error.message, true); return; }
+  currentUser = data.user;
+  await afterLogin();
+};
+
+window.doSignOut = async function(){
+  await supabase.auth.signOut();
+  currentUser = null; currentCompanyId = null;
+  showScreen('auth');
+};
+
+async function afterLogin(){
+  const { data, error } = await supabase
+    .from('memberships')
+    .select('company_id, role, display_name, companies(name, invite_code)')
+    .eq('user_id', currentUser.id)
+    .limit(1);
+  if (error){ toast('Could not load your account.'); return; }
+  if (data && data.length){
+    currentCompanyId = data[0].company_id;
+    currentRole = data[0].role;
+    companyName = data[0].companies?.name || '';
+    inviteCode = data[0].companies?.invite_code || '';
+    $('hdr-company').textContent = companyName;
+    $('hdr-user').textContent = data[0].display_name || currentUser.email;
+    $('team-invite-code').textContent = inviteCode;
+    showScreen('app');
+    await loadAllData();
+    switchTab('sites');
+  } else {
+    showScreen('onboarding');
+  }
+}
+
+// ============================================================
+// ONBOARDING
+// ============================================================
+window.createCompany = async function(){
+  const name = $('ob-name').value.trim();
+  const company = $('ob-company-name').value.trim();
+  if (!name || !company){ setMsg('onboarding-msg', 'Fill in your name and a company name.', true); return; }
+  const { error } = await supabase.rpc('create_company_with_owner', { company_name: company, member_display_name: name });
+  if (error){ setMsg('onboarding-msg', error.message, true); return; }
+  await afterLogin();
+};
+
+window.joinCompany = async function(){
+  const name = $('ob-name').value.trim();
+  const code = $('ob-invite-code').value.trim().toUpperCase();
+  if (!name || !code){ setMsg('onboarding-msg', 'Fill in your name and the invite code.', true); return; }
+  const { error } = await supabase.rpc('join_company_by_invite', { code, member_display_name: name });
+  if (error){ setMsg('onboarding-msg', error.message, true); return; }
+  await afterLogin();
+};
+
+// ============================================================
+// DATA LOADING
+// ============================================================
+async function loadAllData(){
+  const [sitesRes, hivesRes, visitsRes, yieldRes, movesRes, membersRes] = await Promise.all([
+    supabase.from('sites').select('*').eq('company_id', currentCompanyId).order('name'),
+    supabase.from('hives').select('*').eq('company_id', currentCompanyId),
+    supabase.from('visits').select('*').eq('company_id', currentCompanyId).order('visit_date', { ascending:false }),
+    supabase.from('yield_records').select('*').eq('company_id', currentCompanyId).order('season', { ascending:false }),
+    supabase.from('hive_movements').select('*').eq('company_id', currentCompanyId).order('moved_date', { ascending:false }),
+    supabase.from('memberships').select('*').eq('company_id', currentCompanyId)
+  ]);
+  sites = sitesRes.data || [];
+  hives = hivesRes.data || [];
+  visits = visitsRes.data || [];
+  yieldRecords = yieldRes.data || [];
+  movements = movesRes.data || [];
+  members = membersRes.data || [];
+  renderEverything();
+}
+
+function renderEverything(){
+  renderSites();
+  populateSiteDropdowns();
+  renderVisits();
+  renderYield();
+  populateMovementDropdowns();
+  renderMovements();
+  renderDashboard();
+  renderTeam();
+}
+
+// ============================================================
+// TABS
+// ============================================================
+window.switchTab = function(name){
+  ['sites','visits','yield','movements','dashboard','team'].forEach(t => {
+    $('tab-' + t).classList.toggle('hidden', t !== name);
+    $('nav-' + t).classList.toggle('active', t === name);
+  });
+};
+
+// ============================================================
+// SITES
+// ============================================================
+window.addSite = async function(){
+  const name = $('site-name').value.trim();
+  const location = $('site-location').value.trim();
+  if (!name){ toast('Give the site a name.'); return; }
+  const { error } = await supabase.from('sites').insert({ company_id: currentCompanyId, name, location });
+  if (error){ toast(error.message); return; }
+  $('site-name').value = ''; $('site-location').value = '';
+  await loadAllData();
+  toast('Site added.');
+};
+
+window.deleteSite = async function(id){
+  if (!confirm('Remove this site? Hives and history at this site will also be removed.')) return;
+  const { error } = await supabase.from('sites').delete().eq('id', id);
+  if (error){ toast(error.message); return; }
+  await loadAllData();
+};
+
+function renderSites(){
+  const el = $('sites-list');
+  if (!sites.length){ el.innerHTML = '<div class="empty">No sites yet — add your first one above.</div>'; return; }
+  el.innerHTML = sites.map(s => {
+    const hiveCount = hives.filter(h => h.site_id === s.id && h.status === 'active').length;
+    return `<div class="list-card">
+      <div class="top-line">
+        <div class="name">${escapeHtml(s.name)}</div>
+        <button class="danger" onclick="deleteSite('${s.id}')">Remove</button>
+      </div>
+      <div class="meta">${escapeHtml(s.location || 'No location noted')} · ${hiveCount} active hive${hiveCount===1?'':'s'}</div>
+    </div>`;
+  }).join('');
+}
+
+function populateSiteDropdowns(){
+  const opts = sites.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+  $('visit-site').innerHTML = opts || '<option value="">Add a site first</option>';
+  $('yield-site').innerHTML = opts || '<option value="">Add a site first</option>';
+  if (sites.length) onVisitSiteChange();
+}
+
+// ============================================================
+// VISITS
+// ============================================================
+window.onVisitSiteChange = function(){
+  const siteId = $('visit-site').value;
+  const siteHives = hives.filter(h => h.site_id === siteId && h.status === 'active');
+  $('visit-hive').innerHTML = siteHives.map(h => `<option value="${h.id}">${escapeHtml(h.label)}</option>`).join('')
+    + '<option value="__new__">+ New hive</option>';
+  onVisitHiveChange();
+};
+
+window.onVisitHiveChange = function(){
+  $('new-hive-row').classList.toggle('hidden', $('visit-hive').value !== '__new__');
+};
+
+window.saveVisit = async function(){
+  const siteId = $('visit-site').value;
+  let hiveId = $('visit-hive').value;
+  if (!siteId){ toast('Add a site first.'); return; }
+
+  if (hiveId === '__new__'){
+    const label = $('new-hive-label').value.trim();
+    if (!label){ toast('Give the new hive a label.'); return; }
+    const { data, error } = await supabase.from('hives')
+      .insert({ company_id: currentCompanyId, site_id: siteId, label })
+      .select().single();
+    if (error){ toast(error.message); return; }
+    hiveId = data.id;
+    hives.push(data);
+  }
+
+  const payload = {
+    company_id: currentCompanyId,
+    hive_id: hiveId,
+    visited_by: currentUser.id,
+    visit_date: $('visit-date').value || todayStr(),
+    strength_frames: $('visit-strength').value || null,
+    treatment: $('visit-treatment').value || null,
+    feeding: $('visit-feeding').value.trim() || null,
+    notes: $('visit-notes').value.trim() || null
+  };
+  const { error } = await supabase.from('visits').insert(payload);
+  if (error){ toast(error.message); return; }
+
+  $('visit-strength').value=''; $('visit-feeding').value=''; $('visit-notes').value='';
+  $('new-hive-label').value=''; $('visit-treatment').value='';
+  await loadAllData();
+  toast('Visit logged.');
+};
+
+function renderVisits(){
+  const el = $('visits-list');
+  if (!visits.length){ el.innerHTML = '<div class="empty">No visits logged yet.</div>'; return; }
+  el.innerHTML = visits.slice(0, 40).map(v => {
+    const h = hives.find(x => x.id === v.hive_id);
+    const site = h ? siteName(h.site_id) : '—';
+    return `<div class="list-card">
+      <div class="top-line">
+        <div class="name">${escapeHtml(hiveLabel(v.hive_id))} <span class="pill">${escapeHtml(site)}</span></div>
+        <div class="meta">${fmtDate(v.visit_date)}</div>
+      </div>
+      <div class="body">
+        ${v.strength_frames != null ? `Strength: <b>${v.strength_frames} frames</b><br>` : ''}
+        ${v.treatment ? `Treatment: ${escapeHtml(v.treatment)}<br>` : ''}
+        ${v.feeding ? `Feeding: ${escapeHtml(v.feeding)}<br>` : ''}
+        ${v.notes ? escapeHtml(v.notes) : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// YIELD / MGO
+// ============================================================
+window.saveYield = async function(){
+  const siteId = $('yield-site').value;
+  if (!siteId){ toast('Add a site first.'); return; }
+  const payload = {
+    company_id: currentCompanyId,
+    site_id: siteId,
+    season: $('yield-season').value.trim(),
+    flow_type: $('yield-flow').value,
+    kg_harvested: $('yield-kg').value || null,
+    mgo_grade: $('yield-mgo').value || null,
+    notes: $('yield-notes').value.trim() || null
+  };
+  if (!payload.season){ toast('Add a season, e.g. 2025/26.'); return; }
+  const { error } = await supabase.from('yield_records').insert(payload);
+  if (error){ toast(error.message); return; }
+  $('yield-season').value=''; $('yield-kg').value=''; $('yield-mgo').value=''; $('yield-notes').value='';
+  await loadAllData();
+  toast('Yield record saved.');
+};
+
+function renderYield(){
+  const el = $('yield-list');
+  if (!yieldRecords.length){ el.innerHTML = '<div class="empty">No yield records yet.</div>'; return; }
+  el.innerHTML = yieldRecords.map(y => `<div class="list-card">
+      <div class="top-line">
+        <div class="name">${escapeHtml(siteName(y.site_id))}</div>
+        <div class="meta">${escapeHtml(y.season)}</div>
+      </div>
+      <div class="body">
+        ${y.flow_type ? `${escapeHtml(y.flow_type)} flow · ` : ''}
+        ${y.kg_harvested != null ? `${y.kg_harvested} kg` : '— kg'} ·
+        ${y.mgo_grade != null ? `MGO ${y.mgo_grade}+` : 'MGO —'}
+        ${y.notes ? `<br>${escapeHtml(y.notes)}` : ''}
+      </div>
+    </div>`).join('');
+}
+
+// ============================================================
+// MOVEMENTS
+// ============================================================
+function populateMovementDropdowns(){
+  $('move-hive').innerHTML = hives.filter(h => h.status === 'active').map(h =>
+    `<option value="${h.id}" data-site="${h.site_id}">${escapeHtml(h.label)} (${escapeHtml(siteName(h.site_id))})</option>`
+  ).join('') || '<option value="">Add a hive first</option>';
+  $('move-tosite').innerHTML = sites.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+}
+
+window.saveMovement = async function(){
+  const hiveId = $('move-hive').value;
+  const toSite = $('move-tosite').value;
+  if (!hiveId || !toSite){ toast('Add hives and sites first.'); return; }
+  const hive = hives.find(h => h.id === hiveId);
+  if (hive.site_id === toSite){ toast('That hive is already at this site.'); return; }
+
+  const payload = {
+    company_id: currentCompanyId,
+    hive_id: hiveId,
+    from_site_id: hive.site_id,
+    to_site_id: toSite,
+    moved_date: $('move-date').value || todayStr(),
+    flow_type: $('move-flow').value,
+    moved_by: currentUser.id,
+    notes: $('move-notes').value.trim() || null
+  };
+  const { error: moveErr } = await supabase.from('hive_movements').insert(payload);
+  if (moveErr){ toast(moveErr.message); return; }
+
+  const { error: updateErr } = await supabase.from('hives').update({ site_id: toSite }).eq('id', hiveId);
+  if (updateErr){ toast(updateErr.message); return; }
+
+  $('move-notes').value = '';
+  await loadAllData();
+  toast('Move logged.');
+};
+
+function renderMovements(){
+  const el = $('movements-list');
+  if (!movements.length){ el.innerHTML = '<div class="empty">No hive movements logged yet.</div>'; return; }
+  el.innerHTML = movements.map(m => `<div class="list-card">
+      <div class="top-line">
+        <div class="name">${escapeHtml(hiveLabel(m.hive_id))}</div>
+        <div class="meta">${fmtDate(m.moved_date)}</div>
+      </div>
+      <div class="body">${escapeHtml(siteName(m.from_site_id))} → ${escapeHtml(siteName(m.to_site_id))}
+        ${m.flow_type ? ` · chasing ${escapeHtml(m.flow_type)}` : ''}
+        ${m.notes ? `<br>${escapeHtml(m.notes)}` : ''}
+      </div>
+    </div>`).join('');
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard(){
+  const el = $('dashboard-list');
+  if (!sites.length){ el.innerHTML = '<div class="empty">Add sites and start logging to see patterns here.</div>'; return; }
+
+  const rows = sites.map(s => {
+    const siteYields = yieldRecords.filter(y => y.site_id === s.id && y.mgo_grade != null);
+    const avgMgo = siteYields.length ? (siteYields.reduce((a,y) => a + Number(y.mgo_grade), 0) / siteYields.length) : null;
+    const totalKg = yieldRecords.filter(y => y.site_id === s.id).reduce((a,y) => a + (Number(y.kg_harvested) || 0), 0);
+
+    const siteHiveIds = hives.filter(h => h.site_id === s.id && h.status === 'active').map(h => h.id);
+    let latestAvg = null, prevAvg = null;
+    siteHiveIds.forEach(hid => {
+      const hiveVisits = visits.filter(v => v.hive_id === hid && v.strength_frames != null)
+        .sort((a,b) => new Date(b.visit_date) - new Date(a.visit_date));
+      if (hiveVisits[0]) latestAvg = (latestAvg || 0) + Number(hiveVisits[0].strength_frames);
+      if (hiveVisits[1]) prevAvg = (prevAvg || 0) + Number(hiveVisits[1].strength_frames);
+    });
+    const hiveCountWithData = siteHiveIds.filter(hid => visits.some(v => v.hive_id === hid && v.strength_frames != null)).length;
+    if (latestAvg != null && hiveCountWithData) latestAvg = latestAvg / hiveCountWithData;
+    if (prevAvg != null && hiveCountWithData) prevAvg = prevAvg / hiveCountWithData;
+
+    let trend = 'flat', trendLabel = 'No trend yet';
+    if (latestAvg != null && prevAvg != null){
+      const diff = latestAvg - prevAvg;
+      if (diff > 0.2){ trend = 'up'; trendLabel = `▲ improving (+${diff.toFixed(1)} frames)`; }
+      else if (diff < -0.2){ trend = 'down'; trendLabel = `▼ dropping (${diff.toFixed(1)} frames)`; }
+      else { trend = 'flat'; trendLabel = '— holding steady'; }
+    }
+
+    return { site: s, avgMgo, totalKg, latestAvg, trend, trendLabel };
+  }).sort((a,b) => (b.avgMgo || -1) - (a.avgMgo || -1));
+
+  el.innerHTML = rows.map((r, i) => `<div class="dash-card">
+      <div class="rank">#${i+1} by average MGO</div>
+      <div class="top-line">
+        <h3 style="margin:2px 0;">${escapeHtml(r.site.name)}</h3>
+        <div class="mgo">${r.avgMgo != null ? r.avgMgo.toFixed(0) : '—'}</div>
+      </div>
+      <div class="grid">
+        <div class="stat">Strength<br><b class="trend-${r.trend}">${r.latestAvg != null ? r.latestAvg.toFixed(1) + ' frames' : '—'}</b></div>
+        <div class="stat">Trend<br><b class="trend-${r.trend}">${r.trendLabel}</b></div>
+        <div class="stat">Total harvested<br><b>${r.totalKg.toFixed(0)} kg</b></div>
+      </div>
+    </div>`).join('');
+}
+
+// ============================================================
+// TEAM
+// ============================================================
+function renderTeam(){
+  const el = $('team-list');
+  el.innerHTML = members.map(m => `<div class="list-card">
+      <div class="top-line">
+        <div class="name">${escapeHtml(m.display_name || 'Unnamed')}</div>
+        <span class="pill">${escapeHtml(m.role)}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ============================================================
+// utils + boot
+// ============================================================
+function escapeHtml(str){
+  if (str == null) return '';
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function boot(){
+  $('visit-date').value = todayStr();
+  $('move-date').value = todayStr();
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session){ currentUser = session.user; await afterLogin(); }
+  else { showScreen('auth'); }
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT'){ currentUser = null; showScreen('auth'); }
+  });
+}
+boot();
+</script>
+</body>
+</html>
