@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { supabase } from '../../lib/supabase';
-import type { Site } from '../../lib/database.types';
+import type { Site, InspectionData } from '../../lib/database.types';
 
 const COLORS = ['#2F7D5B', '#1D4A38', '#E9A820', '#B4441C', '#5FC08E', '#8B6B3D', '#3A7CA5', '#D4614A'];
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 interface ChartPoint {
   date: string;
@@ -28,26 +28,28 @@ export default function StrengthChart() {
 
   const loadSiteLevel = useCallback(async () => {
     setLoading(true);
-    const { data: logs } = await supabase
-      .from('hive_logs')
-      .select('site_id, log_date, frames_of_bees')
-      .not('frames_of_bees', 'is', null)
-      .order('log_date');
+    const { data: events } = await supabase
+      .from('hive_events')
+      .select('site_id, event_date, data')
+      .eq('event_type', 'inspection')
+      .order('event_date');
 
-    if (!logs || logs.length === 0) { setChartData([]); setLineKeys([]); setLoading(false); return; }
+    if (!events || events.length === 0) { setChartData([]); setLineKeys([]); setLoading(false); return; }
 
     const siteNames = new Map(sites.map((s) => [s.id, s.name]));
     const dateMap = new Map<string, Map<string, number[]>>();
 
-    for (const log of logs) {
-      const siteName = siteNames.get(log.site_id) ?? log.site_id;
-      if (!dateMap.has(log.log_date)) dateMap.set(log.log_date, new Map());
-      const siteMap = dateMap.get(log.log_date)!;
+    for (const ev of events) {
+      const d = ev.data as InspectionData;
+      if (d.frames_of_bees == null) continue;
+      const siteName = siteNames.get(ev.site_id) ?? ev.site_id;
+      if (!dateMap.has(ev.event_date)) dateMap.set(ev.event_date, new Map());
+      const siteMap = dateMap.get(ev.event_date)!;
       if (!siteMap.has(siteName)) siteMap.set(siteName, []);
-      siteMap.get(siteName)!.push(log.frames_of_bees!);
+      siteMap.get(siteName)!.push(d.frames_of_bees);
     }
 
-    const keys = [...new Set(logs.map((l) => siteNames.get(l.site_id) ?? l.site_id))];
+    const keys = [...new Set(events.map((e) => siteNames.get(e.site_id) ?? e.site_id))];
     const points: ChartPoint[] = [];
 
     for (const [date, siteMap] of dateMap) {
@@ -65,30 +67,32 @@ export default function StrengthChart() {
 
   const loadHiveLevel = useCallback(async (siteId: string) => {
     setLoading(true);
-    const { data: logs } = await supabase
-      .from('hive_logs')
-      .select('hive_id, log_date, frames_of_bees')
+    const { data: events } = await supabase
+      .from('hive_events')
+      .select('hive_id, event_date, data')
       .eq('site_id', siteId)
-      .not('frames_of_bees', 'is', null)
-      .order('log_date');
+      .eq('event_type', 'inspection')
+      .order('event_date');
 
     const { data: hives } = await supabase
       .from('hives')
       .select('id, name')
       .eq('site_id', siteId);
 
-    if (!logs || logs.length === 0) { setChartData([]); setLineKeys([]); setLoading(false); return; }
+    if (!events || events.length === 0) { setChartData([]); setLineKeys([]); setLoading(false); return; }
 
     const hiveNames = new Map((hives ?? []).map((h: { id: string; name: string }) => [h.id, h.name]));
     const dateMap = new Map<string, Map<string, number>>();
 
-    for (const log of logs) {
-      const label = log.hive_id ? (hiveNames.get(log.hive_id) ?? 'Unknown') : 'Site avg';
-      if (!dateMap.has(log.log_date)) dateMap.set(log.log_date, new Map());
-      dateMap.get(log.log_date)!.set(label, log.frames_of_bees!);
+    for (const ev of events) {
+      const d = ev.data as InspectionData;
+      if (d.frames_of_bees == null) continue;
+      const label = ev.hive_id ? (hiveNames.get(ev.hive_id) ?? 'Unknown') : 'Site avg';
+      if (!dateMap.has(ev.event_date)) dateMap.set(ev.event_date, new Map());
+      dateMap.get(ev.event_date)!.set(label, d.frames_of_bees);
     }
 
-    const keys = [...new Set(logs.map((l) => l.hive_id ? (hiveNames.get(l.hive_id) ?? 'Unknown') : 'Site avg'))];
+    const keys = [...new Set(events.map((e) => e.hive_id ? (hiveNames.get(e.hive_id) ?? 'Unknown') : 'Site avg'))];
     const points: ChartPoint[] = [];
     for (const [date, hiveMap] of dateMap) {
       const point: ChartPoint = { date };
