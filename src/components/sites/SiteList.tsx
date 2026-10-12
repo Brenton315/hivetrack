@@ -1,11 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSites } from '../../lib/hooks';
+import { useOverviewData } from '../../lib/hooks';
+import { statusLabel } from '../../lib/strength';
+import { fmtMoney } from '../../lib/format';
 import SiteForm from './SiteForm';
 import Logo from '../layout/Logo';
 
+function StatusBadge({ status }: { status: string }) {
+  return (
+    <span className={`hq-status hq-st-${status}`}>
+      <span className={`hq-swatch ${status}`} />
+      {statusLabel(status as 'strong' | 'fair' | 'weak')}
+    </span>
+  );
+}
+
 export default function SiteList() {
-  const { sites, loading, refetch } = useSites();
+  const { sites, loading } = useOverviewData();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
 
@@ -18,7 +29,7 @@ export default function SiteList() {
         </div>
         <div className="hq-title">
           <h1>Sites</h1>
-          <span className="hq-subtitle">{sites.length} sites</span>
+          <span className="hq-subtitle">{sites.length} site{sites.length !== 1 ? 's' : ''}</span>
         </div>
         <div className="hq-actions">
           <button type="button" className="hq-btn-primary hq-add-btn" onClick={() => setShowForm(true)} aria-label="Add site">
@@ -40,26 +51,44 @@ export default function SiteList() {
             <button className="hq-link" onClick={() => setShowForm(true)}>Add your first site</button>
           </p>
         ) : (
-          sites.map((site) => (
-            <button key={site.id} className="hq-trow" style={{ gridTemplateColumns: 'minmax(0,1fr) 80px' }} onClick={() => navigate(`/sites/${site.id}`)}>
-              <div>
-                <span className="hq-site-name">{site.name}</span>
-                <span className="hq-site-flower">
-                  {site.hive_count} hives{site.main_flowering ? ` · ${site.main_flowering}` : ''}
-                </span>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <svg className="icon" width="16" height="16" viewBox="0 0 24 24" style={{ color: 'var(--muted)' }}><path d="M9 18l6-6-6-6" /></svg>
-              </div>
-            </button>
-          ))
+          <>
+            <div className="hq-trow hq-cols-sites hq-thead">
+              <div>Site</div>
+              <div className="hq-num">Hives</div>
+              <div>Strength</div>
+              <div>Status</div>
+              <div className="hq-num">Cost / hive</div>
+            </div>
+            {sites.map((s) => (
+              <button key={s.id} className="hq-trow hq-cols-sites" onClick={() => navigate(`/sites/${s.id}`)}>
+                <div className="hq-c-site">
+                  <span className="hq-site-name">{s.name}</span>
+                  <span className="hq-site-flower">
+                    <span className="hq-hives-inline">{s.hiveCount} hives, </span>
+                    {s.main_flowering ?? ''}
+                  </span>
+                </div>
+                <div className="hq-c-hives hq-num">{s.hiveCount}</div>
+                <div className="hq-c-str">
+                  <div className="hq-track">
+                    <div className={`hq-bar ${s.status}`} style={{ width: `${s.strength}%` }} />
+                  </div>
+                  <span className="hq-pct">{s.strength}%</span>
+                </div>
+                <div className="hq-c-stat">
+                  <StatusBadge status={s.status} />
+                </div>
+                <div className="hq-c-cost hq-num hq-muted">{fmtMoney(s.costPerHive)}</div>
+              </button>
+            ))}
+          </>
         )}
       </div>
 
       {showForm && (
         <SiteForm
           onClose={() => setShowForm(false)}
-          onSaved={() => { setShowForm(false); refetch(); }}
+          onSaved={() => { setShowForm(false); window.location.reload(); }}
         />
       )}
     </>
