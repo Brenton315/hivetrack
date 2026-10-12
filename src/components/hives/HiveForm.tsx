@@ -43,49 +43,45 @@ export default function HiveForm({ siteId, hive, sites, onClose, onSaved }: Prop
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center">
-      <div className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">
-            {hive ? 'Edit Hive' : 'New Hive'}
-          </h2>
-          <button type="button" onClick={onClose} className="text-gray-400 text-2xl leading-none">&times;</button>
+    <div className="hq-overlay">
+      <div className="hq-modal">
+        <div className="hq-modal-head">
+          <h2>{hive ? 'Edit Hive' : 'New Hive'}</h2>
+          <button type="button" onClick={onClose} className="hq-modal-close">&times;</button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Hive name / number *</span>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="hive-name">Hive name / number *</label>
             <input
+              id="hive-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="hq-input"
               placeholder="e.g. H12 or Queen Bee"
             />
-          </label>
+          </div>
 
           {sites && sites.length > 0 && (
-            <label className="block mb-4">
-              <span className="text-sm font-medium text-gray-700">Current site</span>
+            <div className="hq-field">
+              <label className="hq-label" htmlFor="hive-site">Current site</label>
               <select
+                id="hive-site"
                 value={selectedSiteId}
                 onChange={(e) => setSelectedSiteId(e.target.value)}
-                className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                className="hq-select"
               >
                 {sites.map((s) => (
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
-            </label>
+            </div>
           )}
 
-          {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
+          {error && <p className="hq-error" style={{ marginBottom: 12 }}>{error}</p>}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-base transition-colors disabled:opacity-50"
-          >
+          <button type="submit" disabled={saving} className="hq-btn-primary" style={{ width: '100%', minHeight: 44 }}>
             {saving ? 'Saving...' : hive ? 'Update Hive' : 'Add Hive'}
           </button>
         </form>

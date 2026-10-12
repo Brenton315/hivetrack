@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSites } from '../../lib/hooks';
-import SiteCard from './SiteCard';
 import SiteForm from './SiteForm';
+import Logo from '../layout/Logo';
 
 export default function SiteList() {
   const { sites, loading, refetch } = useSites();
@@ -10,41 +10,51 @@ export default function SiteList() {
   const [showForm, setShowForm] = useState(false);
 
   return (
-    <div className="px-4 pt-4">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">My Sites</h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className="w-11 h-11 flex items-center justify-center bg-amber-500 text-white rounded-full text-2xl shadow-md active:scale-95 transition-transform"
-        >
-          +
-        </button>
-      </div>
-
-      {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading...</div>
-      ) : sites.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-4xl mb-3">🏡</div>
-          <p className="text-gray-500">No sites yet</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-3 text-amber-600 font-medium"
-          >
-            Add your first site
+    <>
+      <header className="hq-header">
+        <div className="hq-brand">
+          <Logo size={26} />
+          <span className="hq-wordmark">hivehq</span>
+        </div>
+        <div className="hq-title">
+          <h1>Sites</h1>
+          <span className="hq-subtitle">{sites.length} sites</span>
+        </div>
+        <div className="hq-actions">
+          <button type="button" className="hq-btn-primary hq-add-btn" onClick={() => setShowForm(true)} aria-label="Add site">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+            <span className="hq-add-label">Add site</span>
           </button>
         </div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {sites.map((site) => (
-            <SiteCard
-              key={site.id}
-              site={site}
-              onClick={() => navigate(`/sites/${site.id}`)}
-            />
-          ))}
+      </header>
+
+      <div className="hq-card" style={{ paddingBottom: 8 }}>
+        <div className="hq-card-head">
+          <h2>All sites</h2>
         </div>
-      )}
+        {loading ? (
+          <p className="hq-empty">Loading...</p>
+        ) : sites.length === 0 ? (
+          <p className="hq-empty">
+            No sites yet.{' '}
+            <button className="hq-link" onClick={() => setShowForm(true)}>Add your first site</button>
+          </p>
+        ) : (
+          sites.map((site) => (
+            <button key={site.id} className="hq-trow" style={{ gridTemplateColumns: 'minmax(0,1fr) 80px' }} onClick={() => navigate(`/sites/${site.id}`)}>
+              <div>
+                <span className="hq-site-name">{site.name}</span>
+                <span className="hq-site-flower">
+                  {site.hive_count} hives{site.main_flowering ? ` · ${site.main_flowering}` : ''}
+                </span>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <svg className="icon" width="16" height="16" viewBox="0 0 24 24" style={{ color: 'var(--muted)' }}><path d="M9 18l6-6-6-6" /></svg>
+              </div>
+            </button>
+          ))
+        )}
+      </div>
 
       {showForm && (
         <SiteForm
@@ -52,6 +62,6 @@ export default function SiteList() {
           onSaved={() => { setShowForm(false); refetch(); }}
         />
       )}
-    </div>
+    </>
   );
 }

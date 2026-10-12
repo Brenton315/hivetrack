@@ -3,7 +3,9 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { supabase } from '../../lib/supabase';
 import type { Site } from '../../lib/database.types';
 
-const COLORS = ['#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+const COLORS = ['#2F7D5B', '#1D4A38', '#E9A820', '#B4441C', '#5FC08E', '#8B6B3D', '#3A7CA5', '#D4614A'];
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 
 interface ChartPoint {
   date: string;
@@ -108,21 +110,22 @@ export default function StrengthChart() {
     }
   }, [sites, selectedSiteId, loadSiteLevel, loadHiveLevel]);
 
-  const formatDate = (d: string) => {
-    const date = new Date(d + 'T00:00:00');
-    return date.toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' });
-  };
+  function formatDate(d: string): string {
+    const p = d.split('-');
+    return `${Number(p[2])} ${MONTHS[Number(p[1]) - 1]}`;
+  }
 
   return (
     <div>
-      <h2 className="text-lg font-bold text-gray-900 mb-3">Strength Over Time</h2>
+      <div className="hq-card-head" style={{ padding: '0 0 12px' }}>
+        <h2>Strength Over Time</h2>
+      </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
         <button
           onClick={() => setSelectedSiteId(null)}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-            !selectedSiteId ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'
-          }`}
+          className={!selectedSiteId ? 'hq-btn-primary' : 'hq-btn-secondary'}
+          style={{ borderRadius: 20 }}
         >
           All sites
         </button>
@@ -130,9 +133,8 @@ export default function StrengthChart() {
           <button
             key={s.id}
             onClick={() => setSelectedSiteId(s.id)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              selectedSiteId === s.id ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'
-            }`}
+            className={selectedSiteId === s.id ? 'hq-btn-primary' : 'hq-btn-secondary'}
+            style={{ borderRadius: 20 }}
           >
             {s.name}
           </button>
@@ -140,17 +142,17 @@ export default function StrengthChart() {
       </div>
 
       {loading ? (
-        <div className="h-64 flex items-center justify-center text-gray-400">Loading...</div>
+        <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>Loading...</div>
       ) : chartData.length === 0 ? (
-        <div className="h-64 flex items-center justify-center text-gray-400">No strength data yet</div>
+        <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>No strength data yet</div>
       ) : (
-        <div className="bg-white rounded-2xl p-3 border border-gray-100">
+        <div className="hq-card" style={{ padding: 16 }}>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} label={{ value: 'Frames', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
-              <Tooltip labelFormatter={(label) => formatDate(String(label))} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--line-2)" />
+              <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 12, fill: 'var(--muted)' }} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--muted)' }} label={{ value: 'Frames', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: 'var(--muted)' } }} />
+              <Tooltip labelFormatter={(label) => formatDate(String(label))} contentStyle={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 6 }} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               {lineKeys.map((key, i) => (
                 <Line

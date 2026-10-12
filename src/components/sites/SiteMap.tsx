@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTheme } from '../../lib/theme';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -11,6 +12,7 @@ export default function SiteMap({ lat, lng }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const apiKey = import.meta.env.VITE_LINZ_API_KEY as string | undefined;
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -19,38 +21,30 @@ export default function SiteMap({ lat, lng }: Props) {
       mapRef.current = null;
     }
 
-    if (!apiKey) return;
+    const style = apiKey
+      ? {
+          version: 8 as const,
+          sources: {
+            'linz-aerial': {
+              type: 'raster' as const,
+              tiles: [`https://basemaps.linz.govt.nz/v1/tiles/aerial/WebMercatorQuad/{z}/{x}/{y}.webp?api=${apiKey}`],
+              tileSize: 256,
+              attribution: '&copy; <a href="https://www.linz.govt.nz">LINZ</a> CC BY 4.0',
+            },
+          },
+          layers: [{ id: 'linz-aerial-layer', type: 'raster' as const, source: 'linz-aerial', minzoom: 0, maxzoom: 22 }],
+        }
+      : `https://basemaps.cartocdn.com/gl/${theme === 'dark' ? 'dark-matter' : 'positron'}-gl-style/style.json`;
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: {
-        version: 8,
-        sources: {
-          'linz-aerial': {
-            type: 'raster',
-            tiles: [
-              `https://basemaps.linz.govt.nz/v1/tiles/aerial/WebMercatorQuad/{z}/{x}/{y}.webp?api=${apiKey}`,
-            ],
-            tileSize: 256,
-            attribution: '&copy; <a href="https://www.linz.govt.nz">LINZ</a> CC BY 4.0',
-          },
-        },
-        layers: [
-          {
-            id: 'linz-aerial-layer',
-            type: 'raster',
-            source: 'linz-aerial',
-            minzoom: 0,
-            maxzoom: 22,
-          },
-        ],
-      },
+      style,
       center: [lng, lat],
       zoom: 15,
       attributionControl: {},
     });
 
-    new maplibregl.Marker({ color: '#f59e0b' })
+    new maplibregl.Marker({ color: '#1D4A38' })
       .setLngLat([lng, lat])
       .addTo(map);
 
@@ -60,21 +54,15 @@ export default function SiteMap({ lat, lng }: Props) {
       map.remove();
       mapRef.current = null;
     };
-  }, [lat, lng, apiKey]);
-
-  if (!apiKey) {
-    return (
-      <div className="w-full h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm">
-        <div className="text-center">
-          <div className="text-2xl mb-1">🗺️</div>
-          <p>Map unavailable — set VITE_LINZ_API_KEY</p>
-          <p className="text-xs mt-1">{lat.toFixed(4)}, {lng.toFixed(4)}</p>
-        </div>
-      </div>
-    );
-  }
+  }, [lat, lng, apiKey, theme]);
 
   return (
-    <div ref={containerRef} className="w-full h-48 rounded-xl overflow-hidden" />
+    <div className="hq-map-wrap" ref={containerRef}>
+      {!apiKey && (
+        <div style={{ position: 'absolute', bottom: 8, left: 8, fontSize: 12, color: 'var(--muted)', zIndex: 1 }}>
+          {lat.toFixed(4)}, {lng.toFixed(4)}
+        </div>
+      )}
+    </div>
   );
 }

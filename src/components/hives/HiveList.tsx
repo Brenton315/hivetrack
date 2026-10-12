@@ -15,30 +15,23 @@ export default function HiveList({ siteId, hives, onChanged }: Props) {
 
   return (
     <div>
-      <div className="flex justify-end mb-3">
-        <button
-          onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-medium active:bg-amber-600"
-        >
-          + Hive
-        </button>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+        <button className="hq-btn-primary" onClick={() => setShowForm(true)}>+ Hive</button>
       </div>
 
       {hives.length === 0 ? (
-        <p className="text-center text-gray-400 py-6">No hives at this site</p>
+        <p style={{ textAlign: 'center', color: 'var(--muted)', padding: 24 }}>No hives at this site</p>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {hives.map((hive) => (
             <button
               key={hive.id}
               onClick={() => navigate(`/hives/${hive.id}`)}
-              className="flex items-center justify-between bg-white rounded-xl p-3 border border-gray-100 active:scale-[0.98] transition-transform text-left"
+              className="hq-trow"
+              style={{ gridTemplateColumns: 'minmax(0,1fr) 32px', border: '1px solid var(--line)', borderRadius: 'var(--radius)' }}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-xl">🐝</span>
-                <span className="font-medium text-gray-900">{hive.name}</span>
-              </div>
-              <span className="text-gray-400 text-sm">→</span>
+              <span className="hq-site-name">{hive.name}</span>
+              <svg className="icon" width="16" height="16" viewBox="0 0 24 24" style={{ color: 'var(--muted)' }}><path d="M9 18l6-6-6-6" /></svg>
             </button>
           ))}
         </div>

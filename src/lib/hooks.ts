@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import type { Site, SiteWithDates, Hive, HiveLog, Harvest } from './database.types';
+import { strengthFromFrames, status, average, type StrengthStatus } from './strength';
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
@@ -243,4 +244,146 @@ export function useHiveSiteHistory(hiveId: string | undefined) {
   }, [hiveId]);
 
   return history;
+}
+
+export interface HiveWithStrength {
+  id: string;
+  name: string;
+  site_id: string;
+  site_name: string;
+  strength: number | null;
+  status: StrengthStatus | null;
+}
+
+export interface SiteOverview {
+  id: string;
+  name: string;
+  main_flowering: string | null;
+  lat: number | null;
+  lng: number | null;
+  hiveCount: number;
+  strength: number;
+  status: StrengthStatus;
+  lastHarvest: string | null;
+}
+
+export interface OverviewData {
+  sites: SiteOverview[];
+  hivesWithStrength: HiveWithStrength[];
+  totalHives: number;
+  overallStrength: number;
+  counts: { strong: number; fair: number; weak: number };
+  checkHives: HiveWithStrength[];
+  lastHarvestDate: string | null;
+  lastHarvestSite: string | null;
+  loading: boolean;
+}
+
+export function useOverviewData(): OverviewData {
+  const [data, setData] = useState<Omit<OverviewData, 'loading'>>({
+    sites: [],
+    hivesWithStrength: [],
+    totalHives: 0,
+    overallStrength: 0,
+    counts: { strong: 0, fair: 0, weak: 0 },
+    checkHives: [],
+    lastHarvestDate: null,
+    lastHarvestSite: null,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { data: sitesData } = await supabase.from('sites').select('*').order('name');
+      const { data: hivesData } = await supabase.from('hives').select('*, sites(name)').order('name');
+      const { data: logsData } = await supabase.from('hive_logs').select('hive_id, frames_of_bees, log_date').order('log_date', { ascending: false });
+      const { data: harvestsData } = await supabase.from('harvests').select('site_id, harvest_date').order('harvest_date', { ascending: false });
+
+      if (!sitesData || !hivesData) { setLoading(false); return; }
+
+      const latestLogByHive = new Map<string, { frames_of_bees: number | null; log_date: string }>();
+      for (const log of logsData ?? []) {
+        if (log.hive_id && !latestLogByHive.has(log.hive_id)) {
+          latestLogByHive.set(log.hive_id, log);
+        }
+      }
+
+      const lastHarvestBySite = new Map<string, string>();
+      for (const h of harvestsData ?? []) {
+        if (!lastHarvestBySite.has(h.site_id)) {
+          lastHarvestBySite.set(h.site_id, h.harvest_date);
+        }
+      }
+
+      const hivesWithStrength: HiveWithStrength[] = hivesData.map((hive) => {
+        const log = latestLogByHive.get(hive.id);
+        const str = strengthFromFrames(log?.frames_of_bees ?? null);
+        const siteName = (hive as Record<string, unknown>).sites
+          ? ((hive as Record<string, unknown>).sites as { name: string }).name
+          : '';
+        return {
+          id: hive.id,
+          name: hive.name,
+          site_id: hive.site_id ?? '',
+          site_name: siteName,
+          strength: str,
+          status: str != null ? status(str) : null,
+        };
+      });
+
+      const counts = { strong: 0, fair: 0, weak: 0 };
+      const strengthValues: number[] = [];
+      for (const h of hivesWithStrength) {
+        if (h.strength != null && h.status) {
+          counts[h.status]++;
+          strengthValues.push(h.strength);
+        }
+      }
+
+      const overallStrength = strengthValues.length ? Math.round(average(strengthValues)) : 0;
+
+      const siteOverviews: SiteOverview[] = sitesData.map((site: Site) => {
+        const siteHives = hivesWithStrength.filter((h) => h.site_id === site.id);
+        const siteStrengths = siteHives.filter((h) => h.strength != null).map((h) => h.strength!);
+        const pct = siteStrengths.length ? Math.round(average(siteStrengths)) : 0;
+        return {
+          id: site.id,
+          name: site.name,
+          main_flowering: site.main_flowering,
+          lat: site.lat,
+          lng: site.lng,
+          hiveCount: siteHives.length,
+          strength: pct,
+          status: status(pct),
+          lastHarvest: lastHarvestBySite.get(site.id) ?? null,
+        };
+      });
+
+      const checkHives = hivesWithStrength
+        .filter((h) => h.strength != null && h.status !== 'strong')
+        .sort((a, b) => (a.strength ?? 0) - (b.strength ?? 0));
+
+      let lastHarvestDate: string | null = null;
+      let lastHarvestSite: string | null = null;
+      if (harvestsData && harvestsData.length > 0) {
+        lastHarvestDate = harvestsData[0].harvest_date;
+        const siteId = harvestsData[0].site_id;
+        lastHarvestSite = sitesData.find((s: Site) => s.id === siteId)?.name ?? null;
+      }
+
+      setData({
+        sites: siteOverviews,
+        hivesWithStrength,
+        totalHives: hivesData.length,
+        overallStrength,
+        counts,
+        checkHives,
+        lastHarvestDate,
+        lastHarvestSite,
+      });
+      setLoading(false);
+    })();
+  }, []);
+
+  return { ...data, loading };
 }

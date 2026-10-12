@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { supabase } from '../../lib/supabase';
 
-const COLORS = ['#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#8b5cf6', '#ec4899'];
+const COLORS = ['#2F7D5B', '#1D4A38', '#E9A820', '#B4441C', '#5FC08E', '#8B6B3D'];
 
 interface ChartPoint {
   site: string;
@@ -55,20 +55,22 @@ export default function HarvestChart() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold text-gray-900 mb-3">Harvest by Site</h2>
+      <div className="hq-card-head" style={{ padding: '0 0 12px' }}>
+        <h2>Harvest by Site</h2>
+      </div>
 
       {loading ? (
-        <div className="h-64 flex items-center justify-center text-gray-400">Loading...</div>
+        <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>Loading...</div>
       ) : chartData.length === 0 ? (
-        <div className="h-64 flex items-center justify-center text-gray-400">No harvest data yet</div>
+        <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>No harvest data yet</div>
       ) : (
-        <div className="bg-white rounded-2xl p-3 border border-gray-100">
+        <div className="hq-card" style={{ padding: 16 }}>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="site" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 12 }} label={{ value: 'kg', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--line-2)" />
+              <XAxis dataKey="site" tick={{ fontSize: 11, fill: 'var(--muted)' }} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--muted)' }} label={{ value: 'kg', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: 'var(--muted)' } }} />
+              <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 6 }} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               {seasons.map((season, i) => (
                 <Bar key={season} dataKey={season} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} />

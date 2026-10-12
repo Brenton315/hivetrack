@@ -8,7 +8,7 @@ interface Props {
   onSaved: () => void;
 }
 
-const FLOWERING_OPTIONS = ['mānuka', 'kānuka', 'clover', 'other'];
+const FLOWERING_OPTIONS = ['manuka', 'kanuka', 'clover', 'other'];
 
 export default function SiteForm({ site, onClose, onSaved }: Props) {
   const [name, setName] = useState(site?.name ?? '');
@@ -62,105 +62,69 @@ export default function SiteForm({ site, onClose, onSaved }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center">
-      <div className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
-        <form onSubmit={handleSubmit} className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">
-              {site ? 'Edit Site' : 'New Site'}
-            </h2>
-            <button type="button" onClick={onClose} className="text-gray-400 text-2xl leading-none">&times;</button>
-          </div>
+    <div className="hq-overlay">
+      <div className="hq-modal">
+        <div className="hq-modal-head">
+          <h2>{site ? 'Edit Site' : 'New Site'}</h2>
+          <button type="button" onClick={onClose} className="hq-modal-close">&times;</button>
+        </div>
 
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Site name *</span>
+        <form onSubmit={handleSubmit}>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="site-name">Site name *</label>
             <input
+              id="site-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="hq-input"
               placeholder="e.g. Wairarapa Block"
             />
-          </label>
-
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Hive count</span>
-            <div className="flex items-center gap-3 mt-1">
-              <button type="button" onClick={() => setHiveCount(Math.max(0, hiveCount - 1))}
-                className="w-11 h-11 flex items-center justify-center bg-gray-100 rounded-xl text-xl font-bold text-gray-600 active:bg-gray-200">
-                -
-              </button>
-              <span className="text-2xl font-semibold text-gray-900 min-w-[3rem] text-center">{hiveCount}</span>
-              <button type="button" onClick={() => setHiveCount(hiveCount + 1)}
-                className="w-11 h-11 flex items-center justify-center bg-gray-100 rounded-xl text-xl font-bold text-gray-600 active:bg-gray-200">
-                +
-              </button>
-            </div>
-          </label>
-
-          <div className="mb-3">
-            <span className="text-sm font-medium text-gray-700">GPS pin</span>
-            <div className="flex gap-2 mt-1">
-              <input
-                value={lat}
-                onChange={(e) => setLat(e.target.value)}
-                placeholder="Latitude"
-                type="number"
-                step="any"
-                className="flex-1 px-3 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
-              />
-              <input
-                value={lng}
-                onChange={(e) => setLng(e.target.value)}
-                placeholder="Longitude"
-                type="number"
-                step="any"
-                className="flex-1 px-3 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
-              />
-            </div>
-            <button type="button" onClick={handleGetLocation}
-              className="mt-2 text-sm text-amber-600 font-medium">
-              Use my location
-            </button>
           </div>
 
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Location description</span>
-            <input
-              value={locationText}
-              onChange={(e) => setLocationText(e.target.value)}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="e.g. End of Mikimiki Rd"
-            />
-          </label>
+          <div className="hq-field">
+            <span className="hq-label">Hive count</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button type="button" onClick={() => setHiveCount(Math.max(0, hiveCount - 1))} className="hq-btn-secondary" style={{ width: 40, minHeight: 40, padding: 0, justifyContent: 'center' }}>-</button>
+              <span style={{ fontSize: 22, fontWeight: 600, minWidth: 40, textAlign: 'center' }}>{hiveCount}</span>
+              <button type="button" onClick={() => setHiveCount(hiveCount + 1)} className="hq-btn-secondary" style={{ width: 40, minHeight: 40, padding: 0, justifyContent: 'center' }}>+</button>
+            </div>
+          </div>
 
-          <label className="block mb-4">
-            <span className="text-sm font-medium text-gray-700">Main flowering</span>
-            <div className="flex flex-wrap gap-2 mt-2">
+          <div className="hq-field">
+            <span className="hq-label">GPS pin</span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Latitude" type="number" step="any" className="hq-input" style={{ flex: 1 }} />
+              <input value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Longitude" type="number" step="any" className="hq-input" style={{ flex: 1 }} />
+            </div>
+            <button type="button" onClick={handleGetLocation} className="hq-link" style={{ marginTop: 6, fontSize: 13 }}>Use my location</button>
+          </div>
+
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="site-location">Location description</label>
+            <input id="site-location" value={locationText} onChange={(e) => setLocationText(e.target.value)} className="hq-input" placeholder="e.g. End of Mikimiki Rd" />
+          </div>
+
+          <div className="hq-field">
+            <span className="hq-label">Main flowering</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {FLOWERING_OPTIONS.map((opt) => (
                 <button
                   key={opt}
                   type="button"
                   onClick={() => setMainFlowering(mainFlowering === opt ? '' : opt)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    mainFlowering === opt
-                      ? 'bg-amber-500 text-white'
-                      : 'bg-gray-100 text-gray-700'
-                  }`}
+                  className={mainFlowering === opt ? 'hq-btn-primary' : 'hq-btn-secondary'}
+                  style={{ borderRadius: 20 }}
                 >
                   {opt}
                 </button>
               ))}
             </div>
-          </label>
+          </div>
 
-          {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
+          {error && <p className="hq-error" style={{ marginBottom: 12 }}>{error}</p>}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-base transition-colors disabled:opacity-50"
-          >
+          <button type="submit" disabled={saving} className="hq-btn-primary" style={{ width: '100%', minHeight: 44 }}>
             {saving ? 'Saving...' : site ? 'Update Site' : 'Add Site'}
           </button>
         </form>

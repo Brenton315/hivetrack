@@ -58,93 +58,54 @@ export default function HarvestForm({ siteId, hiveId, hives, onClose, onSaved }:
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center">
-      <div className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">New Harvest</h2>
-          <button type="button" onClick={onClose} className="text-gray-400 text-2xl leading-none">&times;</button>
+    <div className="hq-overlay">
+      <div className="hq-modal">
+        <div className="hq-modal-head">
+          <h2>New Harvest</h2>
+          <button type="button" onClick={onClose} className="hq-modal-close">&times;</button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Date *</span>
-            <input
-              type="date"
-              value={harvestDate}
-              onChange={(e) => setHarvestDate(e.target.value)}
-              required
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
-            />
-          </label>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="harvest-date">Date *</label>
+            <input id="harvest-date" type="date" value={harvestDate} onChange={(e) => setHarvestDate(e.target.value)} required className="hq-input" />
+          </div>
 
           {hives && hives.length > 0 && !hiveId && (
-            <label className="block mb-3">
-              <span className="text-sm font-medium text-gray-700">Hive (leave blank for site total)</span>
-              <select
-                value={selectedHiveId}
-                onChange={(e) => setSelectedHiveId(e.target.value)}
-                className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              >
+            <div className="hq-field">
+              <label className="hq-label" htmlFor="harvest-hive">Hive (leave blank for site total)</label>
+              <select id="harvest-hive" value={selectedHiveId} onChange={(e) => setSelectedHiveId(e.target.value)} className="hq-select">
                 <option value="">Site total</option>
                 {hives.map((h) => (
                   <option key={h.id} value={h.id}>{h.name}</option>
                 ))}
               </select>
-            </label>
+            </div>
           )}
 
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Kilograms *</span>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              value={kg}
-              onChange={(e) => setKg(e.target.value)}
-              required
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="e.g. 45.5"
-            />
-          </label>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="harvest-kg">Kilograms *</label>
+            <input id="harvest-kg" type="number" step="0.1" min="0" value={kg} onChange={(e) => setKg(e.target.value)} required className="hq-input" placeholder="e.g. 45.5" />
+          </div>
 
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Season *</span>
-            <input
-              value={season}
-              onChange={(e) => setSeason(e.target.value)}
-              required
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="e.g. 2025/26"
-            />
-          </label>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="harvest-season">Season *</label>
+            <input id="harvest-season" value={season} onChange={(e) => setSeason(e.target.value)} required className="hq-input" placeholder="e.g. 2025/26" />
+          </div>
 
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Honey type</span>
-            <input
-              value={honeyType}
-              onChange={(e) => setHoneyType(e.target.value)}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="e.g. Mānuka, Clover, Bush blend"
-            />
-          </label>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="harvest-type">Honey type</label>
+            <input id="harvest-type" value={honeyType} onChange={(e) => setHoneyType(e.target.value)} className="hq-input" placeholder="e.g. Manuka, Clover, Bush blend" />
+          </div>
 
-          <label className="block mb-4">
-            <span className="text-sm font-medium text-gray-700">Notes</span>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
-            />
-          </label>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="harvest-notes">Notes</label>
+            <textarea id="harvest-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="hq-input" style={{ resize: 'none' }} />
+          </div>
 
-          {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
+          {error && <p className="hq-error" style={{ marginBottom: 12 }}>{error}</p>}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-base transition-colors disabled:opacity-50"
-          >
+          <button type="submit" disabled={saving} className="hq-btn-primary" style={{ width: '100%', minHeight: 44 }}>
             {saving ? 'Saving...' : 'Save Harvest'}
           </button>
         </form>

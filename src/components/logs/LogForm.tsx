@@ -52,104 +52,63 @@ export default function LogForm({ siteId, hiveId, hives, onClose, onSaved }: Pro
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center">
-      <div className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">New Log Entry</h2>
-          <button type="button" onClick={onClose} className="text-gray-400 text-2xl leading-none">&times;</button>
+    <div className="hq-overlay">
+      <div className="hq-modal">
+        <div className="hq-modal-head">
+          <h2>New Log Entry</h2>
+          <button type="button" onClick={onClose} className="hq-modal-close">&times;</button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Date *</span>
-            <input
-              type="date"
-              value={logDate}
-              onChange={(e) => setLogDate(e.target.value)}
-              required
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
-            />
-          </label>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="log-date">Date *</label>
+            <input id="log-date" type="date" value={logDate} onChange={(e) => setLogDate(e.target.value)} required className="hq-input" />
+          </div>
 
           {hives && hives.length > 0 && !hiveId && (
-            <label className="block mb-3">
-              <span className="text-sm font-medium text-gray-700">Hive (leave blank for whole site)</span>
-              <select
-                value={selectedHiveId}
-                onChange={(e) => setSelectedHiveId(e.target.value)}
-                className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-              >
+            <div className="hq-field">
+              <label className="hq-label" htmlFor="log-hive">Hive (leave blank for whole site)</label>
+              <select id="log-hive" value={selectedHiveId} onChange={(e) => setSelectedHiveId(e.target.value)} className="hq-select">
                 <option value="">Whole site</option>
                 {hives.map((h) => (
                   <option key={h.id} value={h.id}>{h.name}</option>
                 ))}
               </select>
-            </label>
+            </div>
           )}
 
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Frames of bees (strength)</span>
-            <div className="flex items-center gap-3 mt-1">
-              <button type="button" onClick={() => setFramesOfBees(Math.max(0, framesOfBees - 1))}
-                className="w-11 h-11 flex items-center justify-center bg-gray-100 rounded-xl text-xl font-bold text-gray-600 active:bg-gray-200">
-                -
-              </button>
-              <span className="text-2xl font-semibold text-gray-900 min-w-[3rem] text-center">{framesOfBees}</span>
-              <button type="button" onClick={() => setFramesOfBees(framesOfBees + 1)}
-                className="w-11 h-11 flex items-center justify-center bg-gray-100 rounded-xl text-xl font-bold text-gray-600 active:bg-gray-200">
-                +
-              </button>
+          <div className="hq-field">
+            <span className="hq-label">Frames of bees (strength)</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button type="button" onClick={() => setFramesOfBees(Math.max(0, framesOfBees - 1))} className="hq-btn-secondary" style={{ width: 40, minHeight: 40, padding: 0, justifyContent: 'center' }}>-</button>
+              <span style={{ fontSize: 22, fontWeight: 600, minWidth: 40, textAlign: 'center' }}>{framesOfBees}</span>
+              <button type="button" onClick={() => setFramesOfBees(framesOfBees + 1)} className="hq-btn-secondary" style={{ width: 40, minHeight: 40, padding: 0, justifyContent: 'center' }}>+</button>
             </div>
-          </label>
+          </div>
 
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Treatments</span>
-            <input
-              value={treatments}
-              onChange={(e) => setTreatments(e.target.value)}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="e.g. OA/GL strips in"
-            />
-          </label>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="log-treatments">Treatments</label>
+            <input id="log-treatments" value={treatments} onChange={(e) => setTreatments(e.target.value)} className="hq-input" placeholder="e.g. OA/GL strips in" />
+          </div>
 
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Feeding</span>
-            <input
-              value={feeding}
-              onChange={(e) => setFeeding(e.target.value)}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="e.g. 2L sugar syrup"
-            />
-          </label>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="log-feeding">Feeding</label>
+            <input id="log-feeding" value={feeding} onChange={(e) => setFeeding(e.target.value)} className="hq-input" placeholder="e.g. 2L sugar syrup" />
+          </div>
 
-          <label className="block mb-3">
-            <span className="text-sm font-medium text-gray-700">Brood:stores ratio</span>
-            <input
-              value={broodStoresRatio}
-              onChange={(e) => setBroodStoresRatio(e.target.value)}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="e.g. 60:40"
-            />
-          </label>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="log-ratio">Brood:stores ratio</label>
+            <input id="log-ratio" value={broodStoresRatio} onChange={(e) => setBroodStoresRatio(e.target.value)} className="hq-input" placeholder="e.g. 60:40" />
+          </div>
 
-          <label className="block mb-4">
-            <span className="text-sm font-medium text-gray-700">Notes</span>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
-              placeholder="Any observations..."
-            />
-          </label>
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="log-notes">Notes</label>
+            <textarea id="log-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="hq-input" style={{ resize: 'none' }} placeholder="Any observations..." />
+          </div>
 
-          {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
+          {error && <p className="hq-error" style={{ marginBottom: 12 }}>{error}</p>}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-base transition-colors disabled:opacity-50"
-          >
+          <button type="submit" disabled={saving} className="hq-btn-primary" style={{ width: '100%', minHeight: 44 }}>
             {saving ? 'Saving...' : 'Save Log'}
           </button>
         </form>

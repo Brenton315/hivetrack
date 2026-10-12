@@ -24,10 +24,10 @@ export default function SiteDetail() {
   const [showHarvestForm, setShowHarvestForm] = useState(false);
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-400">Loading...</div>;
+    return <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted)' }}>Loading...</div>;
   }
   if (!site) {
-    return <div className="text-center py-12 text-gray-500">Site not found</div>;
+    return <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted)' }}>Site not found</div>;
   }
 
   const tabs: { key: Tab; label: string; count: number }[] = [
@@ -36,62 +36,37 @@ export default function SiteDetail() {
     { key: 'harvests', label: 'Harvests', count: harvests.length },
   ];
 
-  const formatDate = (d: string | null) => {
-    if (!d) return '—';
-    return new Date(d + 'T00:00:00').toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' });
-  };
-
   return (
-    <div className="px-4 pt-3 pb-4">
-      <button onClick={() => navigate('/')} className="text-amber-600 font-medium text-sm mb-3 inline-flex items-center gap-1">
-        ← Sites
+    <>
+      <button className="hq-back" onClick={() => navigate('/sites')}>
+        <svg className="icon" width="14" height="14" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+        Sites
       </button>
 
-      <div className="flex items-start justify-between mb-2">
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{site.name}</h1>
-          <p className="text-sm text-gray-500">
-            {site.hive_count} hives
-            {site.main_flowering && <> · {site.main_flowering}</>}
-          </p>
+          <h1>{site.name}</h1>
+          <span className="hq-subtitle">
+            {site.hive_count} hives{site.main_flowering ? ` · ${site.main_flowering}` : ''}
+          </span>
         </div>
-        <button
-          onClick={() => setEditing(true)}
-          className="px-3 py-1.5 text-sm bg-gray-100 rounded-lg text-gray-600 active:bg-gray-200"
-        >
-          Edit
-        </button>
+        <button className="hq-btn-secondary" onClick={() => setEditing(true)}>Edit</button>
       </div>
 
       {site.location_text && (
-        <p className="text-sm text-gray-500 mb-3">{site.location_text}</p>
+        <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>{site.location_text}</p>
       )}
-
-      <div className="flex gap-4 text-sm mb-3">
-        <div>
-          <span className="text-gray-400">Last inspected</span>
-          <p className="font-medium text-gray-700">{formatDate(site.last_inspected)}</p>
-        </div>
-        <div>
-          <span className="text-gray-400">Last harvested</span>
-          <p className="font-medium text-gray-700">{formatDate(site.last_harvested)}</p>
-        </div>
-      </div>
 
       {site.lat != null && site.lng != null && (
-        <div className="mb-4">
-          <SiteMap lat={site.lat} lng={site.lng} />
-        </div>
+        <SiteMap lat={site.lat} lng={site.lng} />
       )}
 
-      <div className="flex gap-1 mb-4 bg-gray-100 rounded-xl p-1">
+      <div className="hq-tabs">
         {tabs.map((t) => (
           <button
             key={t.key}
+            className={`hq-tab ${tab === t.key ? 'active' : ''}`}
             onClick={() => setTab(t.key)}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === t.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
-            }`}
           >
             {t.label} ({t.count})
           </button>
@@ -104,13 +79,8 @@ export default function SiteDetail() {
 
       {tab === 'logs' && (
         <div>
-          <div className="flex justify-end mb-3">
-            <button
-              onClick={() => setShowLogForm(true)}
-              className="px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-medium active:bg-amber-600"
-            >
-              + Log Entry
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+            <button className="hq-btn-primary" onClick={() => setShowLogForm(true)}>+ Log Entry</button>
           </div>
           <LogList logs={logs} hives={hives} />
         </div>
@@ -118,13 +88,8 @@ export default function SiteDetail() {
 
       {tab === 'harvests' && (
         <div>
-          <div className="flex justify-end mb-3">
-            <button
-              onClick={() => setShowHarvestForm(true)}
-              className="px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-medium active:bg-amber-600"
-            >
-              + Harvest
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+            <button className="hq-btn-primary" onClick={() => setShowHarvestForm(true)}>+ Harvest</button>
           </div>
           <HarvestList harvests={harvests} hives={hives} />
         </div>
@@ -155,6 +120,6 @@ export default function SiteDetail() {
           onSaved={() => { setShowHarvestForm(false); refetchHarvests(); refetch(); }}
         />
       )}
-    </div>
+    </>
   );
 }

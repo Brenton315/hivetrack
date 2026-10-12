@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import Logo from '../layout/Logo';
 
 export default function AuthPage() {
   const [email, setEmail] = useState('');
@@ -24,52 +25,57 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-amber-50 px-4">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-8">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-stone-900">HiveTrack</h1>
-          <p className="text-sm text-stone-500 mt-1">All your beekeeping, finally in one place.</p>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--page)', padding: 16 }}>
+      <div className="hq-card" style={{ width: '100%', maxWidth: 400, padding: 32 }}>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+            <Logo size={40} />
+          </div>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--ink)' }}>hivehq</h1>
+          <p style={{ fontSize: 14, color: 'var(--muted)', marginTop: 4 }}>Hive management for NZ beekeepers.</p>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            required
-            className="w-full px-4 py-3 border border-stone-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
-          />
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+              className="hq-input"
+            />
+          </div>
 
-          <label className="block text-sm font-medium text-stone-700 mb-1 mt-3">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Your password"
-            required
-            minLength={6}
-            className="w-full px-4 py-3 border border-stone-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
-          />
+          <div className="hq-field">
+            <label className="hq-label" htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Your password"
+              required
+              minLength={6}
+              className="hq-input"
+            />
+          </div>
 
-          {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+          {error && <p className="hq-error" style={{ marginBottom: 12 }}>{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-4 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-base transition-colors disabled:opacity-50"
-          >
+          <button type="submit" disabled={loading} className="hq-btn-primary" style={{ width: '100%', minHeight: 44 }}>
             {loading ? 'Please wait...' : isSignUp ? 'Create account' : 'Log in'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-stone-500 mt-4">
+        <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--muted)', marginTop: 16 }}>
           {isSignUp ? 'Already have an account?' : 'New here?'}{' '}
           <button
             type="button"
             onClick={() => { setIsSignUp(!isSignUp); setError(''); }}
-            className="text-amber-600 font-medium underline"
+            className="hq-link"
           >
             {isSignUp ? 'Log in' : 'Create an account'}
           </button>

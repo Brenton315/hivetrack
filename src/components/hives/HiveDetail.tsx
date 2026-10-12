@@ -9,6 +9,13 @@ import HarvestForm from '../harvests/HarvestForm';
 
 type Tab = 'logs' | 'harvests' | 'history';
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+
+function formatDate(d: string): string {
+  const p = d.split('-');
+  return `${Number(p[2])} ${MONTHS[Number(p[1]) - 1]} ${p[0]}`;
+}
+
 export default function HiveDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -22,8 +29,8 @@ export default function HiveDetail() {
   const [showLogForm, setShowLogForm] = useState(false);
   const [showHarvestForm, setShowHarvestForm] = useState(false);
 
-  if (loading) return <div className="text-center py-12 text-gray-400">Loading...</div>;
-  if (!hive) return <div className="text-center py-12 text-gray-500">Hive not found</div>;
+  if (loading) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted)' }}>Loading...</div>;
+  if (!hive) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted)' }}>Hive not found</div>;
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'logs', label: `Logs (${logs.length})` },
@@ -31,38 +38,27 @@ export default function HiveDetail() {
     { key: 'history', label: 'Site History' },
   ];
 
-  const formatDate = (d: string) =>
-    new Date(d + 'T00:00:00').toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' });
-
   return (
-    <div className="px-4 pt-3 pb-4">
-      <button onClick={() => navigate(-1)} className="text-amber-600 font-medium text-sm mb-3 inline-flex items-center gap-1">
-        ← Back
+    <>
+      <button className="hq-back" onClick={() => navigate(-1)}>
+        <svg className="icon" width="14" height="14" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+        Back
       </button>
 
-      <div className="flex items-start justify-between mb-4">
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">🐝 {hive.name}</h1>
-          {hive.site_name && (
-            <p className="text-sm text-gray-500">at {hive.site_name}</p>
-          )}
+          <h1>{hive.name}</h1>
+          {hive.site_name && <span className="hq-subtitle">at {hive.site_name}</span>}
         </div>
-        <button
-          onClick={() => setEditing(true)}
-          className="px-3 py-1.5 text-sm bg-gray-100 rounded-lg text-gray-600 active:bg-gray-200"
-        >
-          Edit
-        </button>
+        <button className="hq-btn-secondary" onClick={() => setEditing(true)}>Edit</button>
       </div>
 
-      <div className="flex gap-1 mb-4 bg-gray-100 rounded-xl p-1">
+      <div className="hq-tabs">
         {tabs.map((t) => (
           <button
             key={t.key}
+            className={`hq-tab ${tab === t.key ? 'active' : ''}`}
             onClick={() => setTab(t.key)}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === t.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
-            }`}
           >
             {t.label}
           </button>
@@ -71,13 +67,8 @@ export default function HiveDetail() {
 
       {tab === 'logs' && (
         <div>
-          <div className="flex justify-end mb-3">
-            <button
-              onClick={() => setShowLogForm(true)}
-              className="px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-medium"
-            >
-              + Log Entry
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+            <button className="hq-btn-primary" onClick={() => setShowLogForm(true)}>+ Log Entry</button>
           </div>
           <LogList logs={logs} />
         </div>
@@ -85,34 +76,27 @@ export default function HiveDetail() {
 
       {tab === 'harvests' && (
         <div>
-          <div className="flex justify-end mb-3">
-            <button
-              onClick={() => setShowHarvestForm(true)}
-              className="px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-medium"
-            >
-              + Harvest
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+            <button className="hq-btn-primary" onClick={() => setShowHarvestForm(true)}>+ Harvest</button>
           </div>
           <HarvestList harvests={harvests} />
         </div>
       )}
 
       {tab === 'history' && (
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {history.length === 0 ? (
-            <p className="text-center text-gray-400 py-6">No site history recorded</p>
+            <p style={{ textAlign: 'center', color: 'var(--muted)', padding: 24 }}>No site history recorded</p>
           ) : (
-            <div className="flex flex-col gap-2">
-              {history.map((h) => (
-                <div key={h.site_id} className="bg-white rounded-xl p-3 border border-gray-100">
-                  <p className="font-medium text-gray-900">{h.site_name}</p>
-                  <p className="text-sm text-gray-500">
-                    {formatDate(h.first_date)}
-                    {h.first_date !== h.last_date && ` — ${formatDate(h.last_date)}`}
-                  </p>
-                </div>
-              ))}
-            </div>
+            history.map((h) => (
+              <div key={h.site_id} className="hq-card" style={{ padding: 16 }}>
+                <p style={{ fontWeight: 500, margin: 0 }}>{h.site_name}</p>
+                <p style={{ fontSize: 13, color: 'var(--muted)', margin: '4px 0 0' }}>
+                  {formatDate(h.first_date)}
+                  {h.first_date !== h.last_date && ` -- ${formatDate(h.last_date)}`}
+                </p>
+              </div>
+            ))
           )}
         </div>
       )}
@@ -144,6 +128,6 @@ export default function HiveDetail() {
           onSaved={() => { setShowHarvestForm(false); refetchHarvests(); }}
         />
       )}
-    </div>
+    </>
   );
 }
