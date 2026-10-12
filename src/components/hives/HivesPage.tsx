@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useOverviewData } from '../../lib/hooks';
 import { statusLabel } from '../../lib/strength';
+import { queenAge } from '../../lib/format';
 import Logo from '../layout/Logo';
 
 export default function HivesPage() {
@@ -33,22 +34,23 @@ export default function HivesPage() {
             <button
               key={h.id}
               className="hq-trow"
-              style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 48px 84px' }}
+              style={{ gridTemplateColumns: '1fr 1fr 44px 76px auto auto' }}
               onClick={() => navigate(`/hives/${h.id}`)}
             >
               <div className="hq-site-name">{h.name}</div>
-              <div className="hq-muted">{h.site_name}</div>
+              <div className="hq-muted" style={{ fontSize: 13 }}>{h.site_name}</div>
               <div className="hq-pct">{h.strength != null ? `${h.strength}%` : '--'}</div>
               <div>
                 {h.status ? (
                   <span className={`hq-status hq-st-${h.status}`}>
-                    <span className={`hq-swatch ${h.status}`} />
-                    {statusLabel(h.status)}
+                    <span aria-hidden="true">●</span> {statusLabel(h.status)}
                   </span>
                 ) : (
                   <span className="hq-muted">--</span>
                 )}
               </div>
+              <div className="hq-muted" style={{ fontSize: 13 }}>{h.queen_breed ?? '--'}</div>
+              <div className="hq-muted" style={{ fontSize: 13 }}>{queenAge(h.queen_year)}</div>
             </button>
           ))
         )}
