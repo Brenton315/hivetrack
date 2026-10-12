@@ -274,6 +274,10 @@ button.hq-trow:hover { background: var(--hover); }
 .hq-muted { color: var(--muted); }
 .hq-empty { margin: 0; padding: 16px 20px; font-size: 14px; color: var(--muted); border-top: 1px solid var(--line-2); }
 
+/* Detail table: desktop cells visible, mobile card hidden */
+.hq-detail-mobile { display: none; }
+.hq-detail-cell { display: block; }
+
 /* Card sizes */
 .hq-sites-card { flex: 3 1 560px; padding-bottom: 8px; }
 .hq-map-card { flex: 2 1 380px; padding-bottom: 16px; }
@@ -389,11 +393,15 @@ button.hq-trow:hover { background: var(--hover); }
   .hq-cols-sites .hq-c-site { grid-area: site; }
   .hq-cols-sites .hq-c-str { grid-area: str; justify-self: end; }
   .hq-cols-sites .hq-c-stat { grid-area: stat; justify-self: end; }
-  .hq-cols-sites .hq-c-hives, .hq-cols-sites .hq-c-harv { display: none; }
+  .hq-cols-sites .hq-c-hives, .hq-cols-sites .hq-c-harv, .hq-cols-sites .hq-c-cost { display: none; }
   .hq-cols-sites .hq-track { display: none; }
   .hq-hives-inline { display: inline; }
   .hq-cols-check { grid-template-columns: 52px minmax(0, 1fr) 44px 72px; gap: 8px; }
   .hq-map-wrap { margin: 0 16px; height: 220px; }
+
+  /* Detail hive table: show stacked card on mobile */
+  .hq-detail-cell { display: none; }
+  .hq-detail-mobile { display: block; }
 
   .hq-tabbar {
     display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;

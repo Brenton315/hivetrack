@@ -7,7 +7,10 @@ import SiteList from './components/sites/SiteList';
 import SiteDetail from './components/sites/SiteDetail';
 import HivesPage from './components/hives/HivesPage';
 import HiveDetail from './components/hives/HiveDetail';
-import HarvestsPage from './components/harvests/HarvestsPage';
+import EconomicsPage from './components/economics/EconomicsPage';
+import MapPage from './components/map/MapPage';
+import CalendarPage from './components/calendar/CalendarPage';
+import ShopPage from './components/shop/ShopPage';
 import ChartsPage from './components/charts/ChartsPage';
 import AccountPage from './components/auth/AccountPage';
 
@@ -17,9 +20,7 @@ export default function App() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--page)', color: 'var(--muted)' }}>
-        <div style={{ textAlign: 'center' }}>
-          <p>Loading...</p>
-        </div>
+        <p>Loading...</p>
       </div>
     );
   }
@@ -37,7 +38,10 @@ export default function App() {
           <Route path="/sites/:id" element={<SiteDetail />} />
           <Route path="/hives" element={<HivesPage />} />
           <Route path="/hives/:id" element={<HiveDetail />} />
-          <Route path="/harvests" element={<HarvestsPage />} />
+          <Route path="/economics" element={<EconomicsPage />} />
+          <Route path="/map" element={<MapPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/shop" element={<ShopPage />} />
           <Route path="/reports" element={<ChartsPage />} />
           <Route path="/account" element={<AccountPage />} />
         </Route>
