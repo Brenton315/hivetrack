@@ -1,29 +1,35 @@
+import { useState } from 'react';
 import Logo from '../layout/Logo';
+import AdrForm from './AdrForm';
 
-const REPORT_TYPES = [
-  {
-    title: 'Apiary Disease Return (ADR)',
-    description: 'Annual declaration required by MPI for all registered beekeepers in New Zealand.',
-    status: 'Coming soon',
-  },
-  {
-    title: 'Certificate of Inspection (COI)',
-    description: 'Issued after an apiary inspection, confirms disease-free status.',
-    status: 'Coming soon',
-  },
-  {
-    title: 'AFB Declaration',
-    description: 'American Foulbrood elimination declaration for hive movements and sales.',
-    status: 'Coming soon',
-  },
-  {
-    title: 'Harvest Declaration',
-    description: 'Honey harvest records for traceability and compliance.',
-    status: 'Coming soon',
-  },
+type ReportTab = 'adr' | 'coi' | 'afb' | 'harvest';
+
+const TABS: { key: ReportTab; label: string }[] = [
+  { key: 'adr', label: 'ADR' },
+  { key: 'coi', label: 'COI' },
+  { key: 'afb', label: 'AFB' },
+  { key: 'harvest', label: 'Harvest' },
 ];
 
+function PlaceholderReport({ title, description, note }: { title: string; description: string; note: string }) {
+  return (
+    <div className="hq-card" style={{ padding: 20 }}>
+      <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{title}</h2>
+      <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 12, lineHeight: 1.6 }}>{description}</p>
+      <div style={{
+        padding: '12px 16px', borderRadius: 8, background: 'var(--surface)',
+        border: '1px dashed var(--line)', textAlign: 'center',
+      }}>
+        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', marginBottom: 4 }}>Coming soon</p>
+        <p style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.5 }}>{note}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function ReportsPage() {
+  const [tab, setTab] = useState<ReportTab>('adr');
+
   return (
     <>
       <header className="hq-header">
@@ -37,25 +43,56 @@ export default function ReportsPage() {
         </div>
       </header>
 
-      <div className="hq-card" style={{ padding: 24 }}>
-        <p style={{ color: 'var(--muted)', marginBottom: 20, lineHeight: 1.6 }}>
-          Generate and manage compliance reports for MPI and industry requirements.
-          Reports will be pre-filled from your site and hive data.
-        </p>
+      <div className="hq-tabs" role="tablist" style={{ marginBottom: 16 }}>
+        {TABS.map(t => (
+          <button
+            key={t.key}
+            role="tab"
+            aria-selected={tab === t.key}
+            className={`hq-tab ${tab === t.key ? 'active' : ''}`}
+            onClick={() => setTab(t.key)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-        <div style={{ display: 'grid', gap: 16 }}>
-          {REPORT_TYPES.map((r) => (
-            <div key={r.title} className="hq-card" style={{ padding: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
-              <div>
-                <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{r.title}</h3>
-                <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>{r.description}</p>
-              </div>
-              <span style={{ fontSize: 12, color: 'var(--muted)', whiteSpace: 'nowrap', padding: '4px 10px', borderRadius: 12, background: 'var(--card-border)', flexShrink: 0 }}>
-                {r.status}
-              </span>
-            </div>
-          ))}
-        </div>
+      {tab === 'adr' && <AdrForm />}
+
+      {tab === 'coi' && (
+        <PlaceholderReport
+          title="Certificate of Inspection (COI)"
+          description="Issued after an apiary inspection, confirms disease-free status for a specific site. Required for selling hives or moving bees between regions."
+          note="This will generate a COI from your most recent inspection data for a selected site. Integration with AsureQuality inspection records is planned."
+        />
+      )}
+
+      {tab === 'afb' && (
+        <PlaceholderReport
+          title="AFB Declaration"
+          description="American Foulbrood elimination declaration for hive movements and sales. Required under the Biosecurity (National American Foulbrood Pest Management Plan) Order."
+          note="This will generate an AFB-free declaration based on your inspection history. All hives at the declared site must have been inspected within the required window."
+        />
+      )}
+
+      {tab === 'harvest' && (
+        <PlaceholderReport
+          title="Harvest Declaration"
+          description="Honey harvest records for traceability, RMP compliance, and export certification. Required by MPI for all commercial beekeepers."
+          note="This will compile your harvest records into a declaration with batch numbers, weights, honey types, and site locations. Pre-filled from your recorded harvests."
+        />
+      )}
+
+      <div className="hq-card" style={{ padding: 16, marginTop: 16 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>HiveHub integration</h3>
+        <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6, marginBottom: 8 }}>
+          HiveHub is the MPI system for managing apiary registrations and disease returns.
+          Integration would allow direct submission of ADRs and access to apiary registration data.
+        </p>
+        <p style={{ fontSize: 12, color: 'var(--fair)', lineHeight: 1.5 }}>
+          Status: Researching. We have not confirmed whether HiveHub offers a public API.
+          No API calls will be made without your explicit confirmation.
+        </p>
       </div>
     </>
   );
