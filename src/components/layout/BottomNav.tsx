@@ -9,6 +9,7 @@ const tabs = [
 
 const moreItems = [
   { path: '/notes', label: 'AI Notes' },
+  { path: '/queens', label: 'Queens' },
   { path: '/calendar', label: 'Calendar' },
   { path: '/shop', label: 'Shop' },
   { path: '/analysis', label: 'Analysis' },

@@ -102,6 +102,33 @@ export interface Membership {
   created_at: string;
 }
 
+export type QueenStage =
+  | 'graft'
+  | 'cell_builder'
+  | 'capped'
+  | 'mating_nuc'
+  | 'laying'
+  | 'introduced'
+  | 'sold'
+  | 'failed';
+
+export interface Queen {
+  id: string;
+  user_id: string;
+  code: string;
+  line: string;
+  mother_id: string | null;
+  graft_date: string;
+  stage: QueenStage;
+  stage_date: string;
+  hive_id: string | null;
+  site_id: string | null;
+  notes: string | null;
+  cost: number;
+  sold_price: number | null;
+  created_at: string;
+}
+
 export interface Harvest {
   id: string;
   user_id: string;
