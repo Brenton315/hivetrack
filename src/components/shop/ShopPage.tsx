@@ -23,7 +23,7 @@ export default function ShopPage() {
   );
 
   const productMap = useMemo(
-    () => new Map(products.map(p => [p.id, p])),
+    () => new Map<string, typeof products[number]>(products.map(p => [p.id, p])),
     [products],
   );
 

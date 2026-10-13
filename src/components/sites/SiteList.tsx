@@ -16,7 +16,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function SiteList() {
-  const { sites, loading } = useOverviewData();
+  const { sites, loading, refetch } = useOverviewData();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
 
@@ -88,7 +88,7 @@ export default function SiteList() {
       {showForm && (
         <SiteForm
           onClose={() => setShowForm(false)}
-          onSaved={() => { setShowForm(false); window.location.reload(); }}
+          onSaved={() => { setShowForm(false); refetch(); }}
         />
       )}
     </>

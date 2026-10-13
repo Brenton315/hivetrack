@@ -21,7 +21,10 @@ export default function HiveForm({ siteId, hive, sites, onClose, onSaved }: Prop
   const [error, setError] = useState('');
 
   const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from({ length: SETTINGS.queen.yearRange }, (_, i) => currentYear - i);
+  const yearOptions = Array.from(
+    { length: currentYear - SETTINGS.queen.yearRange.min + 1 },
+    (_, i) => currentYear - i,
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

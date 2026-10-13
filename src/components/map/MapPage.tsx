@@ -78,9 +78,14 @@ export default function MapPage() {
           `<div style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;line-height:1.5">` +
           `<strong>${site.name}</strong><br/>` +
           `${site.hiveCount} hive${site.hiveCount !== 1 ? 's' : ''} &middot; ${site.strength}% ${statusLabel(site.status)}<br/>` +
-          `<a href="/sites/${site.id}" style="color:#1D4A38;text-decoration:none;font-weight:500">View site &rarr;</a>` +
+          `<a data-site-id="${site.id}" style="color:#1D4A38;text-decoration:none;font-weight:500;cursor:pointer">View site &rarr;</a>` +
           `</div>`
         );
+
+      popup.on('open', () => {
+        const link = popup.getElement()?.querySelector<HTMLElement>('[data-site-id]');
+        if (link) link.onclick = () => navigate(`/sites/${site.id}`);
+      });
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([site.lng!, site.lat!])

@@ -66,26 +66,6 @@ export interface CostData {
   amount: number;
 }
 
-export interface SiteWithDates extends Site {
-  last_inspected: string | null;
-  last_harvested: string | null;
-}
-
-// Legacy types kept for compatibility
-export interface HiveLog {
-  id: string;
-  user_id: string;
-  hive_id: string | null;
-  site_id: string;
-  log_date: string;
-  frames_of_bees: number | null;
-  treatments: string | null;
-  feeding: string | null;
-  brood_stores_ratio: string | null;
-  notes: string | null;
-  created_at: string;
-}
-
 export interface Harvest {
   id: string;
   user_id: string;
@@ -99,12 +79,3 @@ export interface Harvest {
   created_at: string;
 }
 
-export interface HiveLogWithNames extends HiveLog {
-  hive_name?: string;
-  site_name?: string;
-}
-
-export interface HarvestWithNames extends Harvest {
-  hive_name?: string;
-  site_name?: string;
-}

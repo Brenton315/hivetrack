@@ -2,8 +2,7 @@ import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSite, useHives, useEvents, useOverviewData, computeHiveData } from '../../lib/hooks';
 import type { HiveWithStrength } from '../../lib/hooks';
-import type { HiveEvent, Hive } from '../../lib/database.types';
-import { statusLabel } from '../../lib/strength';
+import type { Hive } from '../../lib/database.types';
 import { fmtDateShort, queenAge, fmtRatio, fmtMoney } from '../../lib/format';
 import { SETTINGS } from '../../lib/settings';
 import SiteForm from './SiteForm';
@@ -29,15 +28,6 @@ function compare(a: HiveWithStrength, b: HiveWithStrength, key: SortKey, dir: So
   const bv = sortValue(b, key);
   const cmp = av < bv ? -1 : av > bv ? 1 : 0;
   return dir === 'asc' ? cmp : -cmp;
-}
-
-function StatusBadge({ status }: { status: string }) {
-  return (
-    <span className={`hq-status hq-st-${status}`}>
-      <span className={`hq-swatch ${status}`} />
-      {statusLabel(status as 'strong' | 'fair' | 'weak')}
-    </span>
-  );
 }
 
 export default function SiteDetail() {

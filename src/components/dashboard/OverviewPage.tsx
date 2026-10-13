@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useOverviewData } from '../../lib/hooks';
-import { useTheme } from '../../lib/theme';
 import { statusLabel } from '../../lib/strength';
 import { fmtDate, fmtMoney } from '../../lib/format';
 import Logo from '../layout/Logo';

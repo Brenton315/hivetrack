@@ -113,7 +113,7 @@ export default function CalendarPage() {
                   </td>
                   {MONTH_LABELS.map((_, i) => {
                     const monthNum = i + 1;
-                    const active = plant.months.includes(monthNum);
+                    const active = (plant.months as readonly number[]).includes(monthNum);
                     return (
                       <td
                         key={i}

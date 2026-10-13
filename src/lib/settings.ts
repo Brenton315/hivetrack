@@ -1,8 +1,6 @@
 export const SETTINGS = {
-  strength: {
-    strongMin: 70,
-    fairMin: 50,
-    maxFrames: 10,
+  revenue: {
+    honeyPricePerKg: 25,
   },
   stores: {
     lowRatio: 0.6,

@@ -82,11 +82,11 @@ export default function HiveDetail() {
   const [qaError, setQaError] = useState('');
 
   // Feed fields
-  const [feedType, setFeedType] = useState(SETTINGS.feed.types[0]);
+  const [feedType, setFeedType] = useState<string>(SETTINGS.feed.types[0]);
   const [feedAmount, setFeedAmount] = useState('');
 
   // Treatment fields
-  const [treatProduct, setTreatProduct] = useState(SETTINGS.treatment.products[0]);
+  const [treatProduct, setTreatProduct] = useState<string>(SETTINGS.treatment.products[0]);
 
   // Box fields
   const [boxType, setBoxType] = useState<'brood' | 'super'>(SETTINGS.box.types[0]);
@@ -97,7 +97,7 @@ export default function HiveDetail() {
   const [inspBrood, setInspBrood] = useState('');
 
   // Cost fields
-  const [costCategory, setCostCategory] = useState(SETTINGS.cost.categories[0]);
+  const [costCategory, setCostCategory] = useState<string>(SETTINGS.cost.categories[0]);
   const [costAmount, setCostAmount] = useState('');
 
   // Derived data

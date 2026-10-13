@@ -3,6 +3,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import type { Site, Hive, HiveEvent, Harvest, InspectionData, CostData } from './database.types';
 import { strengthFromFrames, status, average, type StrengthStatus } from './strength';
+import { SETTINGS } from './settings';
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
@@ -199,6 +200,7 @@ export interface OverviewData {
   totalRevenue: number;
   costByCategory: Record<string, number>;
   loading: boolean;
+  refetch: () => void;
 }
 
 function computeHiveData(
@@ -248,7 +250,7 @@ function computeHiveData(
 export { computeHiveData };
 
 export function useOverviewData(): OverviewData {
-  const [data, setData] = useState<Omit<OverviewData, 'loading'>>({
+  const [data, setData] = useState<Omit<OverviewData, 'loading' | 'refetch'>>({
     sites: [], hivesWithStrength: [], totalHives: 0, overallStrength: 0,
     counts: { strong: 0, fair: 0, weak: 0 }, checkHives: [],
     lastHarvestDate: null, lastHarvestSite: null,
@@ -256,9 +258,9 @@ export function useOverviewData(): OverviewData {
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      const [sitesRes, hivesRes, eventsRes, harvestsRes] = await Promise.all([
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    const [sitesRes, hivesRes, eventsRes, harvestsRes] = await Promise.all([
         supabase.from('sites').select('*').order('name'),
         supabase.from('hives').select('*, sites(name)').order('name'),
         supabase.from('hive_events').select('*').order('event_date', { ascending: false }),
@@ -300,7 +302,7 @@ export function useOverviewData(): OverviewData {
       }
 
       let totalRevenue = 0;
-      for (const h of harvestsData) { totalRevenue += Number(h.kg) * 25; }
+      for (const h of harvestsData) { totalRevenue += Number(h.kg) * SETTINGS.revenue.honeyPricePerKg; }
 
       const lastHarvestBySite = new Map<string, string>();
       for (const h of harvestsData) {
@@ -346,8 +348,9 @@ export function useOverviewData(): OverviewData {
         totalCosts, totalRevenue, costByCategory,
       });
       setLoading(false);
-    })();
   }, []);
 
-  return { ...data, loading };
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  return { ...data, loading, refetch: fetchData };
 }

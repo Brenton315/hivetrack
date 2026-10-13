@@ -33,7 +33,7 @@ export default function EconomicsPage() {
     const siteCosts: Record<string, number> = {};
     for (const e of costEvents) {
       if (e.site_id === filterSiteId) {
-        const d = e.data as CostData;
+        const d = e.data as unknown as CostData;
         siteCosts[d.category] = (siteCosts[d.category] ?? 0) + (d.amount ?? 0);
       }
     }
@@ -107,7 +107,7 @@ export default function EconomicsPage() {
                   tickFormatter={(v: number) => `$${v}`}
                 />
                 <Tooltip
-                  formatter={(value: number) => [fmtMoney(value), 'Amount']}
+                  formatter={(value) => [fmtMoney(Number(value ?? 0)), 'Amount']}
                   contentStyle={{
                     background: 'var(--surface)',
                     border: '1px solid var(--line)',
@@ -201,7 +201,7 @@ export default function EconomicsPage() {
             <p className="hq-empty">No cost entries yet.</p>
           ) : (
             costEvents.slice(0, 50).map((e) => {
-              const d = e.data as CostData;
+              const d = e.data as unknown as CostData;
               return (
                 <div
                   key={e.id}

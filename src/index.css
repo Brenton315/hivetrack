@@ -415,6 +415,26 @@ button.hq-trow:hover { background: var(--hover); }
     background: none; border: none; cursor: pointer;
   }
   .hq-tab-item.active { color: var(--brand); font-weight: 600; }
+
+  .hq-more-backdrop {
+    position: fixed; inset: 0; z-index: 4;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+  .hq-more-menu {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); width: calc(100% - 32px); max-width: 400px;
+    padding: 8px; display: flex; flex-direction: column; gap: 2px;
+  }
+  .hq-more-item {
+    display: flex; align-items: center; min-height: 44px; padding: 0 16px;
+    border: none; background: none; border-radius: 6px;
+    color: var(--ink); font: 500 15px 'IBM Plex Sans', system-ui, sans-serif;
+    cursor: pointer; text-align: left; width: 100%;
+  }
+  .hq-more-item:hover { background: var(--hover); }
+  .hq-more-item.active { color: var(--brand); font-weight: 600; }
 }
 
 @media (min-width: 821px) {
