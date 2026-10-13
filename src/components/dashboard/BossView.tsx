@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useOverviewData } from '../../lib/hooks';
 import { fmtMoney } from '../../lib/format';
+import AskPanel from '../charts/AskPanel';
 
 export default function BossView() {
   const data = useOverviewData();
@@ -50,6 +51,13 @@ export default function BossView() {
           ))}
         </div>
       )}
+
+      <div style={{ marginTop: 16 }}>
+        <div className="hq-card-head" style={{ padding: '0 0 4px' }}>
+          <h2>Ask AI</h2>
+        </div>
+        <AskPanel />
+      </div>
     </>
   );
 }

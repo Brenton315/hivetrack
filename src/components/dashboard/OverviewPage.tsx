@@ -6,6 +6,7 @@ import { statusLabel } from '../../lib/strength';
 import { fmtDateShort, fmtMoney } from '../../lib/format';
 import Logo from '../layout/Logo';
 import BossView from './BossView';
+import AskPanel from '../charts/AskPanel';
 
 type ViewMode = 'boss' | 'operations';
 
@@ -138,6 +139,12 @@ function OperationsView() {
       </section>
       <section className="hq-row" aria-label="Attention">
         <AttentionList hives={data.checkHives} />
+      </section>
+      <section className="hq-row" aria-label="Ask AI">
+        <div className="hq-card-head" style={{ padding: '0 0 4px' }}>
+          <h2>Ask AI</h2>
+        </div>
+        <AskPanel />
       </section>
     </>
   );
