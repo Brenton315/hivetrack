@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useOverviewData } from '../../lib/hooks';
 import { statusLabel } from '../../lib/strength';
-import { fmtDate, fmtMoney } from '../../lib/format';
+import { fmtDateShort, fmtMoney } from '../../lib/format';
 import Logo from '../layout/Logo';
 
 function StatusBadge({ status }: { status: string }) {
@@ -42,11 +42,6 @@ function KpiStrip({ data }: { data: ReturnType<typeof useOverviewData> }) {
         <span className="hq-kpi-value">{fmtMoney(data.totalCosts)}</span>
         <span className="hq-kpi-sub">{fmtMoney(avgCost)} per hive</span>
       </div>
-      <div className="hq-kpi">
-        <span className="hq-kpi-label">Last harvest</span>
-        <span className="hq-kpi-value date">{fmtDate(data.lastHarvestDate)}</span>
-        <span className="hq-kpi-sub">{data.lastHarvestSite ?? '--'}</span>
-      </div>
     </div>
   );
 }
@@ -63,17 +58,22 @@ function SitesTable({ sites }: { sites: ReturnType<typeof useOverviewData>['site
       <div className="hq-trow hq-cols-sites hq-thead">
         <div>Site</div>
         <div className="hq-num">Hives</div>
+        <div>Last checked</div>
         <div>Strength</div>
         <div>Status</div>
-        <div className="hq-num">Cost/hive</div>
       </div>
       {sites.map((s) => (
         <button key={s.id} className="hq-trow hq-cols-sites" onClick={() => navigate(`/sites/${s.id}`)}>
           <div className="hq-c-site">
             <span className="hq-site-name">{s.name}</span>
-            <span className="hq-site-flower">{s.main_flowering ?? ''}</span>
           </div>
           <div className="hq-c-hives hq-num">{s.hiveCount}</div>
+          <div className="hq-c-checked">
+            <span className={s.overdue ? 'hq-overdue' : 'hq-muted'}>
+              {s.lastChecked ? fmtDateShort(s.lastChecked) : 'Never'}
+            </span>
+            {s.overdue && <span className="hq-overdue-badge">Overdue</span>}
+          </div>
           <div className="hq-c-str">
             <div className="hq-track">
               <div className={`hq-bar ${s.status}`} style={{ width: `${s.strength}%` }} />
@@ -83,7 +83,6 @@ function SitesTable({ sites }: { sites: ReturnType<typeof useOverviewData>['site
           <div className="hq-c-stat">
             <StatusBadge status={s.status} />
           </div>
-          <div className="hq-c-cost hq-num hq-muted">{fmtMoney(s.costPerHive)}</div>
         </button>
       ))}
       {sites.length === 0 && <p className="hq-empty">No sites yet. Add your first site.</p>}

@@ -22,18 +22,8 @@ export const SETTINGS = {
   cost: {
     categories: ['feed', 'treatment', 'transport', 'equipment', 'labour', 'other'] as const,
   },
-  flowering: {
-    plants: [
-      { name: 'Manuka', months: [11, 12, 1, 2], colour: '#8B4513' },
-      { name: 'Kanuka', months: [10, 11, 12, 1], colour: '#6B8E23' },
-      { name: 'Clover', months: [11, 12, 1, 2, 3], colour: '#DAA520' },
-      { name: 'Pohutukawa', months: [12, 1], colour: '#DC143C' },
-      { name: 'Rata', months: [12, 1, 2], colour: '#B22222' },
-      { name: 'Kamahi', months: [10, 11, 12], colour: '#556B2F' },
-      { name: 'Rewarewa', months: [10, 11], colour: '#CD853F' },
-      { name: 'Willow', months: [8, 9, 10], colour: '#9ACD32' },
-    ],
-    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  inspection: {
+    overdueDays: 21,
   },
   shop: {
     categories: ['Feed', 'Treatments', 'Equipment', 'Protective gear'] as const,

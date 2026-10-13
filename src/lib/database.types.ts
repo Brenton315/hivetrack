@@ -6,7 +6,6 @@ export interface Site {
   lat: number | null;
   lng: number | null;
   location_text: string | null;
-  main_flowering: string | null;
   created_at: string;
 }
 
@@ -21,7 +20,7 @@ export interface Hive {
   created_at: string;
 }
 
-export type EventType = 'feed' | 'treatment' | 'box_added' | 'inspection' | 'move' | 'cost';
+export type EventType = 'feed' | 'treatment' | 'box_added' | 'inspection' | 'move' | 'cost' | 'visit';
 
 export interface HiveEvent {
   id: string;
@@ -42,10 +41,12 @@ export interface FeedData {
 
 export interface TreatmentData {
   product: string;
+  method?: string;
 }
 
 export interface BoxAddedData {
   box_type: 'brood' | 'super';
+  action?: 'added' | 'removed';
 }
 
 export interface InspectionData {
@@ -66,6 +67,24 @@ export interface CostData {
   amount: number;
 }
 
+export interface VisitData {
+  hive_count: number;
+  strong: number;
+  medium: number;
+  weak: number;
+  feeding_done: boolean;
+  feeding_type?: string;
+  feeding_quantity?: string;
+  treatment_applied: boolean;
+  treatment_product?: string;
+  treatment_method?: string;
+  boxes_added: number;
+  boxes_removed: number;
+  queen_events?: string;
+  logged_by?: string;
+  source: 'manual' | 'ai';
+}
+
 export interface Harvest {
   id: string;
   user_id: string;
@@ -78,4 +97,3 @@ export interface Harvest {
   notes: string | null;
   created_at: string;
 }
-

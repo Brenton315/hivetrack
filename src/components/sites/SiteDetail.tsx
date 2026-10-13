@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSite, useHives, useEvents, useOverviewData, computeHiveData } from '../../lib/hooks';
 import type { HiveWithStrength } from '../../lib/hooks';
 import type { Hive } from '../../lib/database.types';
-import { fmtDateShort, queenAge, fmtRatio, fmtMoney } from '../../lib/format';
+import { fmtDate, fmtDateShort, queenAge, fmtRatio, fmtMoney } from '../../lib/format';
 import { SETTINGS } from '../../lib/settings';
 import SiteForm from './SiteForm';
 import SiteMap from './SiteMap';
@@ -88,9 +88,7 @@ export default function SiteDetail() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div>
           <h1>{site.name}</h1>
-          <span className="hq-subtitle">
-            {site.main_flowering ?? ''}{site.main_flowering && site.location_text ? ' · ' : ''}{site.location_text ?? ''}
-          </span>
+          {site.location_text && <span className="hq-subtitle">{site.location_text}</span>}
         </div>
         <button className="hq-btn-secondary" onClick={() => setEditing(true)}>Edit</button>
       </div>
@@ -203,6 +201,32 @@ export default function SiteDetail() {
               );
             })}
           </>
+        )}
+      </div>
+
+      {/* Visit history */}
+      <div className="hq-card" style={{ paddingBottom: 8 }}>
+        <div className="hq-card-head">
+          <h2>Site history</h2>
+        </div>
+        {events.length === 0 ? (
+          <p className="hq-empty">No events recorded for this site.</p>
+        ) : (
+          events.slice(0, 20).map((e) => (
+            <div
+              key={e.id}
+              className="hq-trow"
+              style={{ gridTemplateColumns: '80px 90px minmax(0,1fr)', cursor: 'default' }}
+            >
+              <div className="hq-muted" style={{ fontSize: 13 }}>{fmtDate(e.event_date)}</div>
+              <div style={{ fontSize: 13, fontWeight: 500 }}>
+                {e.event_type === 'box_added' ? 'Box change' : e.event_type.charAt(0).toUpperCase() + e.event_type.slice(1)}
+              </div>
+              <div className="hq-muted" style={{ fontSize: 13 }}>
+                {e.notes ?? ''}
+              </div>
+            </div>
+          ))
         )}
       </div>
 

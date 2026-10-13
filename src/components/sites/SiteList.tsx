@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOverviewData } from '../../lib/hooks';
 import { statusLabel } from '../../lib/strength';
-import { fmtMoney } from '../../lib/format';
+import { fmtDateShort } from '../../lib/format';
 import SiteForm from './SiteForm';
 import Logo from '../layout/Logo';
 
@@ -55,20 +55,25 @@ export default function SiteList() {
             <div className="hq-trow hq-cols-sites hq-thead">
               <div>Site</div>
               <div className="hq-num">Hives</div>
+              <div>Last checked</div>
               <div>Strength</div>
               <div>Status</div>
-              <div className="hq-num">Cost / hive</div>
             </div>
             {sites.map((s) => (
               <button key={s.id} className="hq-trow hq-cols-sites" onClick={() => navigate(`/sites/${s.id}`)}>
                 <div className="hq-c-site">
                   <span className="hq-site-name">{s.name}</span>
                   <span className="hq-site-flower">
-                    <span className="hq-hives-inline">{s.hiveCount} hives, </span>
-                    {s.main_flowering ?? ''}
+                    <span className="hq-hives-inline">{s.hiveCount} hives</span>
                   </span>
                 </div>
                 <div className="hq-c-hives hq-num">{s.hiveCount}</div>
+                <div className="hq-c-checked">
+                  <span className={s.overdue ? 'hq-overdue' : 'hq-muted'}>
+                    {s.lastChecked ? fmtDateShort(s.lastChecked) : 'Never'}
+                  </span>
+                  {s.overdue && <span className="hq-overdue-badge">Overdue</span>}
+                </div>
                 <div className="hq-c-str">
                   <div className="hq-track">
                     <div className={`hq-bar ${s.status}`} style={{ width: `${s.strength}%` }} />
@@ -78,7 +83,6 @@ export default function SiteList() {
                 <div className="hq-c-stat">
                   <StatusBadge status={s.status} />
                 </div>
-                <div className="hq-c-cost hq-num hq-muted">{fmtMoney(s.costPerHive)}</div>
               </button>
             ))}
           </>
