@@ -85,6 +85,23 @@ export interface VisitData {
   source: 'manual' | 'ai';
 }
 
+export type OrgRole = 'owner' | 'head_beekeeper' | 'staff';
+
+export interface Organization {
+  id: string;
+  name: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface Membership {
+  id: string;
+  org_id: string;
+  user_id: string;
+  role: OrgRole;
+  created_at: string;
+}
+
 export interface Harvest {
   id: string;
   user_id: string;

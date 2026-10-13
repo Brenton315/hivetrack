@@ -286,6 +286,50 @@ button.hq-trow:hover { background: var(--hover); }
 .hq-map-card { flex: 2 1 380px; padding-bottom: 16px; }
 .hq-check-card { flex: 1 1 360px; padding-bottom: 8px; }
 
+/* ── Boss view ── */
+.hq-boss-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.hq-boss-tile {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hq-boss-tile .hq-kpi-value { font-size: 28px; }
+@media (max-width: 640px) {
+  .hq-boss-grid { grid-template-columns: repeat(2, 1fr); }
+  .hq-boss-tile .hq-kpi-value { font-size: 22px; }
+}
+
+/* ── View switcher ── */
+.hq-view-switch {
+  display: inline-flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+}
+.hq-view-btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--card);
+  color: var(--muted);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.hq-view-btn.active {
+  background: var(--brand);
+  color: #fff;
+}
+.hq-view-btn:not(.active):hover {
+  background: var(--line);
+}
+
 /* ── Map ── */
 .hq-map-wrap {
   margin: 0 20px; border-radius: 6px; overflow: hidden;

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useAuth } from './lib/hooks';
+import { OrgProvider } from './lib/org';
 import AppShell from './components/layout/AppShell';
 import AuthPage from './components/auth/AuthPage';
 import OverviewPage from './components/dashboard/OverviewPage';
@@ -29,21 +30,23 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <Routes>
-        <Route element={<AppShell />}>
-          <Route path="/" element={<OverviewPage />} />
-          <Route path="/sites" element={<SiteList />} />
-          <Route path="/sites/:id" element={<SiteDetail />} />
-          <Route path="/hives/:id" element={<HiveDetail />} />
-          <Route path="/economics" element={<EconomicsPage />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/shop" element={<ShopPage />} />
-          <Route path="/analysis" element={<ChartsPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/account" element={<AccountPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <OrgProvider userId={user.id}>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <Routes>
+          <Route element={<AppShell />}>
+            <Route path="/" element={<OverviewPage />} />
+            <Route path="/sites" element={<SiteList />} />
+            <Route path="/sites/:id" element={<SiteDetail />} />
+            <Route path="/hives/:id" element={<HiveDetail />} />
+            <Route path="/economics" element={<EconomicsPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/analysis" element={<ChartsPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/account" element={<AccountPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </OrgProvider>
   );
 }

@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOverviewData } from '../../lib/hooks';
+import { useOrg } from '../../lib/org';
 import { statusLabel } from '../../lib/strength';
 import { fmtDateShort, fmtMoney } from '../../lib/format';
 import Logo from '../layout/Logo';
+import BossView from './BossView';
+
+type ViewMode = 'boss' | 'operations';
 
 function StatusBadge({ status }: { status: string }) {
   return (
@@ -112,16 +117,36 @@ function AttentionList({ hives }: { hives: ReturnType<typeof useOverviewData>['c
   );
 }
 
-export default function OverviewPage() {
+function OperationsView() {
   const data = useOverviewData();
 
   if (data.loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--muted)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', color: 'var(--muted)' }}>
         Loading...
       </div>
     );
   }
+
+  return (
+    <>
+      <section className="hq-row" aria-label="Summary">
+        <KpiStrip data={data} />
+      </section>
+      <section className="hq-row" aria-label="Sites">
+        <SitesTable sites={data.sites} />
+      </section>
+      <section className="hq-row" aria-label="Attention">
+        <AttentionList hives={data.checkHives} />
+      </section>
+    </>
+  );
+}
+
+export default function OverviewPage() {
+  const { role } = useOrg();
+  const defaultView: ViewMode = role === 'owner' ? 'boss' : 'operations';
+  const [view, setView] = useState<ViewMode>(defaultView);
 
   return (
     <>
@@ -133,19 +158,25 @@ export default function OverviewPage() {
         <div className="hq-title">
           <h1>Overview</h1>
         </div>
+        <div className="hq-actions">
+          <div className="hq-view-switch">
+            <button
+              className={`hq-view-btn ${view === 'boss' ? 'active' : ''}`}
+              onClick={() => setView('boss')}
+            >
+              Boss
+            </button>
+            <button
+              className={`hq-view-btn ${view === 'operations' ? 'active' : ''}`}
+              onClick={() => setView('operations')}
+            >
+              Operations
+            </button>
+          </div>
+        </div>
       </header>
 
-      <section className="hq-row" aria-label="Summary">
-        <KpiStrip data={data} />
-      </section>
-
-      <section className="hq-row" aria-label="Sites">
-        <SitesTable sites={data.sites} />
-      </section>
-
-      <section className="hq-row" aria-label="Attention">
-        <AttentionList hives={data.checkHives} />
-      </section>
+      {view === 'boss' ? <BossView /> : <OperationsView />}
     </>
   );
 }
