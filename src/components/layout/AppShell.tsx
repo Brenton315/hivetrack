@@ -6,12 +6,13 @@ import { useTheme } from '../../lib/theme';
 const navItems = [
   { path: '/', label: 'Overview', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg> },
   { path: '/sites', label: 'Sites', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg> },
-  { path: '/hives', label: 'Hives', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" /></svg> },
   { path: '/economics', label: 'Economics', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6" /></svg> },
-  { path: '/map', label: 'Map', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4z" /><path d="M8 2v16M16 6v16" /></svg> },
   { path: '/calendar', label: 'Calendar', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg> },
-  { path: '/shop', label: 'Shop', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><path d="M3 6h18M16 10a4 4 0 0 1-8 0" /></svg> },
-  { path: '/reports', label: 'Reports', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6" /></svg> },
+  { path: '/shop', label: 'Marketplace', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><path d="M3 6h18M16 10a4 4 0 0 1-8 0" /></svg> },
+  { path: '/notes', label: 'AI Notes', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg> },
+  { path: '/queens', label: 'Queens', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z" /></svg> },
+  { path: '/analysis', label: 'Analysis', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6" /></svg> },
+  { path: '/reports', label: 'Reports', icon: <svg className="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" /></svg> },
 ];
 
 function isActive(current: string, path: string) {

@@ -1,10 +1,18 @@
 import { useAuth } from '../../lib/hooks';
 import { useTheme } from '../../lib/theme';
+import { useOrg } from '../../lib/org';
 import Logo from '../layout/Logo';
+
+const ROLE_LABELS: Record<string, string> = {
+  owner: 'Owner',
+  head_beekeeper: 'Head Beekeeper',
+  staff: 'Staff',
+};
 
 export default function AccountPage() {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { org, role, members, isOwner } = useOrg();
 
   return (
     <>
@@ -29,7 +37,7 @@ export default function AccountPage() {
           </div>
           <div>
             <p style={{ fontWeight: 500, color: 'var(--ink)' }}>{user?.email}</p>
-            <p style={{ fontSize: 13, color: 'var(--muted)' }}>Beekeeper</p>
+            <p style={{ fontSize: 13, color: 'var(--muted)' }}>{role ? ROLE_LABELS[role] : 'Beekeeper'}{org ? ` · ${org.name}` : ''}</p>
           </div>
         </div>
 
@@ -56,6 +64,29 @@ export default function AccountPage() {
           Sign out
         </button>
       </div>
+
+      {org && (
+        <div className="hq-card" style={{ padding: 20, marginTop: 16 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Organisation</h2>
+          <p style={{ fontSize: 14, fontWeight: 500, marginBottom: 8 }}>{org.name}</p>
+          {members.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <span className="hq-label" style={{ marginBottom: 8, display: 'block' }}>Team ({members.length})</span>
+              {members.map(m => (
+                <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--line)', fontSize: 13 }}>
+                  <span style={{ color: 'var(--ink)' }}>{m.user_id === user?.id ? 'You' : m.user_id.slice(0, 8) + '...'}</span>
+                  <span style={{ color: 'var(--muted)', fontSize: 12 }}>{ROLE_LABELS[m.role] ?? m.role}</span>
+                </div>
+              ))}
+              {isOwner && (
+                <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>
+                  Invite members by sharing your organisation link (coming soon).
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--muted)', marginTop: 16 }}>
         hivehq — Hive management for NZ beekeepers

@@ -175,16 +175,17 @@ export interface HiveWithStrength {
 export interface SiteOverview {
   id: string;
   name: string;
-  main_flowering: string | null;
   lat: number | null;
   lng: number | null;
   hiveCount: number;
   strength: number;
   status: StrengthStatus;
-  lastHarvest: string | null;
+  lastChecked: string | null;
   totalCost: number;
   costPerHive: number;
   hivesNeedingAttention: number;
+  strengthCounts: { strong: number; fair: number; weak: number };
+  overdue: boolean;
 }
 
 export interface OverviewData {
@@ -194,8 +195,6 @@ export interface OverviewData {
   overallStrength: number;
   counts: { strong: number; fair: number; weak: number };
   checkHives: HiveWithStrength[];
-  lastHarvestDate: string | null;
-  lastHarvestSite: string | null;
   totalCosts: number;
   totalRevenue: number;
   costByCategory: Record<string, number>;
@@ -249,11 +248,17 @@ function computeHiveData(
 
 export { computeHiveData };
 
+function daysAgo(dateStr: string | null): number {
+  if (!dateStr) return Infinity;
+  const d = new Date(dateStr);
+  const now = new Date();
+  return Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+}
+
 export function useOverviewData(): OverviewData {
   const [data, setData] = useState<Omit<OverviewData, 'loading' | 'refetch'>>({
     sites: [], hivesWithStrength: [], totalHives: 0, overallStrength: 0,
     counts: { strong: 0, fair: 0, weak: 0 }, checkHives: [],
-    lastHarvestDate: null, lastHarvestSite: null,
     totalCosts: 0, totalRevenue: 0, costByCategory: {},
   });
   const [loading, setLoading] = useState(true);
@@ -304,9 +309,15 @@ export function useOverviewData(): OverviewData {
       let totalRevenue = 0;
       for (const h of harvestsData) { totalRevenue += Number(h.kg) * SETTINGS.revenue.honeyPricePerKg; }
 
-      const lastHarvestBySite = new Map<string, string>();
-      for (const h of harvestsData) {
-        if (!lastHarvestBySite.has(h.site_id)) lastHarvestBySite.set(h.site_id, h.harvest_date);
+      // Compute last checked date per site (most recent inspection or visit event)
+      const lastCheckedBySite = new Map<string, string>();
+      for (const e of eventsData) {
+        if (e.event_type === 'inspection' || e.event_type === 'visit') {
+          const existing = lastCheckedBySite.get(e.site_id);
+          if (!existing || e.event_date > existing) {
+            lastCheckedBySite.set(e.site_id, e.event_date);
+          }
+        }
       }
 
       const costBySite = new Map<string, number>();
@@ -320,31 +331,38 @@ export function useOverviewData(): OverviewData {
         const pct = siteStrengths.length ? Math.round(average(siteStrengths)) : 0;
         const siteCost = costBySite.get(site.id) ?? 0;
         const needingAttention = siteHives.filter(h => h.strength != null && h.status !== 'strong').length;
+        const lastChecked = lastCheckedBySite.get(site.id) ?? null;
+        const strengthCounts = { strong: 0, fair: 0, weak: 0 };
+        for (const h of siteHives) {
+          if (h.status) strengthCounts[h.status]++;
+        }
         return {
-          id: site.id, name: site.name, main_flowering: site.main_flowering,
+          id: site.id, name: site.name,
           lat: site.lat, lng: site.lng,
           hiveCount: siteHives.length, strength: pct, status: status(pct),
-          lastHarvest: lastHarvestBySite.get(site.id) ?? null,
+          lastChecked,
           totalCost: siteCost,
           costPerHive: siteHives.length ? Math.round(siteCost / siteHives.length) : 0,
           hivesNeedingAttention: needingAttention,
+          strengthCounts,
+          overdue: daysAgo(lastChecked) > SETTINGS.inspection.overdueDays,
         };
+      });
+
+      // Sort by most overdue first (null lastChecked = most overdue, then oldest date first)
+      siteOverviews.sort((a, b) => {
+        const da = a.lastChecked ?? '0000-00-00';
+        const db = b.lastChecked ?? '0000-00-00';
+        return da.localeCompare(db);
       });
 
       const checkHives = hivesWithStrength
         .filter(h => h.strength != null && h.status !== 'strong')
         .sort((a, b) => (a.strength ?? 0) - (b.strength ?? 0));
 
-      let lastHarvestDate: string | null = null;
-      let lastHarvestSite: string | null = null;
-      if (harvestsData.length > 0) {
-        lastHarvestDate = harvestsData[0].harvest_date;
-        lastHarvestSite = sitesData.find((s: Site) => s.id === harvestsData[0].site_id)?.name ?? null;
-      }
-
       setData({
         sites: siteOverviews, hivesWithStrength, totalHives: hivesData.length,
-        overallStrength, counts, checkHives, lastHarvestDate, lastHarvestSite,
+        overallStrength, counts, checkHives,
         totalCosts, totalRevenue, costByCategory,
       });
       setLoading(false);

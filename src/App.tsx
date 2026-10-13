@@ -1,17 +1,19 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useAuth } from './lib/hooks';
+import { OrgProvider } from './lib/org';
 import AppShell from './components/layout/AppShell';
 import AuthPage from './components/auth/AuthPage';
 import OverviewPage from './components/dashboard/OverviewPage';
 import SiteList from './components/sites/SiteList';
 import SiteDetail from './components/sites/SiteDetail';
-import HivesPage from './components/hives/HivesPage';
 import HiveDetail from './components/hives/HiveDetail';
 import EconomicsPage from './components/economics/EconomicsPage';
-import MapPage from './components/map/MapPage';
 import CalendarPage from './components/calendar/CalendarPage';
 import ShopPage from './components/shop/ShopPage';
 import ChartsPage from './components/charts/ChartsPage';
+import NotesPage from './components/ai/NotesPage';
+import QueenPage from './components/queens/QueenPage';
+import ReportsPage from './components/reports/ReportsPage';
 import AccountPage from './components/auth/AccountPage';
 
 export default function App() {
@@ -30,22 +32,25 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <Routes>
-        <Route element={<AppShell />}>
-          <Route path="/" element={<OverviewPage />} />
-          <Route path="/sites" element={<SiteList />} />
-          <Route path="/sites/:id" element={<SiteDetail />} />
-          <Route path="/hives" element={<HivesPage />} />
-          <Route path="/hives/:id" element={<HiveDetail />} />
-          <Route path="/economics" element={<EconomicsPage />} />
-          <Route path="/map" element={<MapPage />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/shop" element={<ShopPage />} />
-          <Route path="/reports" element={<ChartsPage />} />
-          <Route path="/account" element={<AccountPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <OrgProvider userId={user.id}>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <Routes>
+          <Route element={<AppShell />}>
+            <Route path="/" element={<OverviewPage />} />
+            <Route path="/sites" element={<SiteList />} />
+            <Route path="/sites/:id" element={<SiteDetail />} />
+            <Route path="/hives/:id" element={<HiveDetail />} />
+            <Route path="/economics" element={<EconomicsPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/analysis" element={<ChartsPage />} />
+            <Route path="/notes" element={<NotesPage />} />
+            <Route path="/queens" element={<QueenPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/account" element={<AccountPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </OrgProvider>
   );
 }

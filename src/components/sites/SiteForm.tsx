@@ -8,15 +8,12 @@ interface Props {
   onSaved: () => void;
 }
 
-const FLOWERING_OPTIONS = ['manuka', 'kanuka', 'clover', 'other'];
-
 export default function SiteForm({ site, onClose, onSaved }: Props) {
   const [name, setName] = useState(site?.name ?? '');
   const [hiveCount, setHiveCount] = useState(site?.hive_count ?? 0);
   const [lat, setLat] = useState(site?.lat?.toString() ?? '');
   const [lng, setLng] = useState(site?.lng?.toString() ?? '');
   const [locationText, setLocationText] = useState(site?.location_text ?? '');
-  const [mainFlowering, setMainFlowering] = useState(site?.main_flowering ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -35,7 +32,6 @@ export default function SiteForm({ site, onClose, onSaved }: Props) {
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null,
       location_text: locationText || null,
-      main_flowering: mainFlowering || null,
     };
 
     const result = site
@@ -103,23 +99,6 @@ export default function SiteForm({ site, onClose, onSaved }: Props) {
           <div className="hq-field">
             <label className="hq-label" htmlFor="site-location">Location description</label>
             <input id="site-location" value={locationText} onChange={(e) => setLocationText(e.target.value)} className="hq-input" placeholder="e.g. End of Mikimiki Rd" />
-          </div>
-
-          <div className="hq-field">
-            <span className="hq-label">Main flowering</span>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {FLOWERING_OPTIONS.map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() => setMainFlowering(mainFlowering === opt ? '' : opt)}
-                  className={mainFlowering === opt ? 'hq-btn-primary' : 'hq-btn-secondary'}
-                  style={{ borderRadius: 20 }}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
           </div>
 
           {error && <p className="hq-error" style={{ marginBottom: 12 }}>{error}</p>}
