@@ -11,6 +11,7 @@ import EconomicsPage from './components/economics/EconomicsPage';
 import CalendarPage from './components/calendar/CalendarPage';
 import ShopPage from './components/shop/ShopPage';
 import ChartsPage from './components/charts/ChartsPage';
+import NotesPage from './components/ai/NotesPage';
 import ReportsPage from './components/reports/ReportsPage';
 import AccountPage from './components/auth/AccountPage';
 
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/analysis" element={<ChartsPage />} />
+            <Route path="/notes" element={<NotesPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/account" element={<AccountPage />} />
           </Route>
