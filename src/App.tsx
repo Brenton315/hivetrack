@@ -8,10 +8,9 @@ import SiteList from './components/sites/SiteList';
 import SiteDetail from './components/sites/SiteDetail';
 import HiveDetail from './components/hives/HiveDetail';
 import EconomicsPage from './components/economics/EconomicsPage';
-import CalendarPage from './components/calendar/CalendarPage';
+import InventoryPage from './components/inventory/InventoryPage';
 import ShopPage from './components/shop/ShopPage';
 import ChartsPage from './components/charts/ChartsPage';
-import NotesPage from './components/ai/NotesPage';
 import QueenPage from './components/queens/QueenPage';
 import ReportsPage from './components/reports/ReportsPage';
 import AccountPage from './components/auth/AccountPage';
@@ -41,10 +40,9 @@ export default function App() {
             <Route path="/sites/:id" element={<SiteDetail />} />
             <Route path="/hives/:id" element={<HiveDetail />} />
             <Route path="/economics" element={<EconomicsPage />} />
-            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/analysis" element={<ChartsPage />} />
-            <Route path="/notes" element={<NotesPage />} />
             <Route path="/queens" element={<QueenPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/account" element={<AccountPage />} />

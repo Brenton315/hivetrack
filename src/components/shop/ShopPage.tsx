@@ -1,83 +1,65 @@
 import { useState, useMemo } from 'react';
 import { SETTINGS } from '../../lib/settings';
-import { simulateQuotes, rankQuotes } from '../../lib/marketplace';
-import type { TenderItem, SupplierQuote } from '../../lib/marketplace';
-import Logo from '../layout/Logo';
 import { fmtMoney } from '../../lib/format';
+import Logo from '../layout/Logo';
 
-type ShopCategory = 'All' | typeof SETTINGS.shop.categories[number];
-type Tab = 'order' | 'quotes';
+type ShopCategory = (typeof SETTINGS.shop.categories)[number] | 'All';
 
-interface OrderItem {
+interface CartItem {
   id: string;
+  name: string;
+  price: number;
   qty: number;
+  supplier: string;
 }
 
 export default function ShopPage() {
-  const [tab, setTab] = useState<Tab>('order');
-  const [activeCategory, setActiveCategory] = useState<ShopCategory>('All');
-  const [order, setOrder] = useState<OrderItem[]>([]);
-  const [quotes, setQuotes] = useState<SupplierQuote[] | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState<ShopCategory>('All');
+  const [cart, setCart] = useState<Map<string, CartItem>>(new Map());
+  const [showCart, setShowCart] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
-  const categories: ShopCategory[] = ['All', ...SETTINGS.shop.categories];
   const products = SETTINGS.shop.products;
 
-  const filtered = useMemo(
-    () => activeCategory === 'All' ? products : products.filter(p => p.category === activeCategory),
-    [activeCategory, products],
-  );
+  const filtered = useMemo(() => {
+    if (filter === 'All') return products;
+    return products.filter(p => p.category === filter);
+  }, [filter, products]);
 
-  const productMap = useMemo(
-    () => new Map(products.map(p => [p.id as string, p])),
-    [products],
-  );
+  const cartItems = useMemo(() => Array.from(cart.values()), [cart]);
+  const cartTotal = useMemo(() => cartItems.reduce((s, i) => s + i.price * i.qty, 0), [cartItems]);
+  const cartCount = useMemo(() => cartItems.reduce((s, i) => s + i.qty, 0), [cartItems]);
 
-  function addItem(id: string) {
-    setOrder(prev => {
-      const existing = prev.find(item => item.id === id);
-      if (existing) return prev.map(item => item.id === id ? { ...item, qty: item.qty + 1 } : item);
-      return [...prev, { id, qty: 1 }];
+  const addToCart = (p: typeof products[number]) => {
+    setCart(prev => {
+      const next = new Map(prev);
+      const existing = next.get(p.id);
+      if (existing) {
+        next.set(p.id, { ...existing, qty: existing.qty + 1 });
+      } else {
+        next.set(p.id, { id: p.id, name: p.name, price: p.price, qty: 1, supplier: p.supplier });
+      }
+      return next;
     });
-  }
+  };
 
-  function updateQty(id: string, qty: number) {
-    if (qty <= 0) { setOrder(prev => prev.filter(item => item.id !== id)); return; }
-    setOrder(prev => prev.map(item => item.id === id ? { ...item, qty } : item));
-  }
+  const updateQty = (id: string, qty: number) => {
+    setCart(prev => {
+      const next = new Map(prev);
+      if (qty <= 0) {
+        next.delete(id);
+      } else {
+        const item = next.get(id);
+        if (item) next.set(id, { ...item, qty });
+      }
+      return next;
+    });
+  };
 
-  function removeItem(id: string) {
-    setOrder(prev => prev.filter(item => item.id !== id));
-  }
-
-  const grandTotal = useMemo(
-    () => order.reduce((sum, item) => {
-      const product = productMap.get(item.id);
-      return sum + (product ? product.price * item.qty : 0);
-    }, 0),
-    [order, productMap],
-  );
-
-  function handleRequestQuotes() {
-    if (order.length === 0) return;
-    setLoading(true);
-
-    const tenderItems: TenderItem[] = order.map(o => ({
-      product_id: o.id,
-      product_name: productMap.get(o.id)?.name ?? '',
-      qty: o.qty,
-    }));
-
-    const priceMap = new Map(products.map(p => [p.id, p.price]));
-
-    setTimeout(() => {
-      const raw = simulateQuotes(tenderItems, priceMap);
-      const ranked = rankQuotes(raw);
-      setQuotes(ranked);
-      setTab('quotes');
-      setLoading(false);
-    }, 800);
-  }
+  const placeOrder = () => {
+    setOrderPlaced(true);
+    setCart(new Map());
+  };
 
   return (
     <>
@@ -88,172 +70,120 @@ export default function ShopPage() {
         </div>
         <div className="hq-title">
           <h1>Marketplace</h1>
-          <span className="hq-subtitle">Build an order, get supplier quotes</span>
+          <span className="hq-subtitle">{products.length} products</span>
+        </div>
+        <div className="hq-actions">
+          <button
+            type="button"
+            className="hq-btn-primary hq-add-btn"
+            onClick={() => setShowCart(!showCart)}
+            style={{ position: 'relative' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+            </svg>
+            <span className="hq-add-label">Cart{cartCount > 0 ? ` (${cartCount})` : ''}</span>
+          </button>
         </div>
       </header>
 
-      <div className="hq-tabs" role="tablist" style={{ marginBottom: 16 }}>
-        <button role="tab" className={`hq-tab ${tab === 'order' ? 'active' : ''}`} onClick={() => setTab('order')}>
-          Order builder
-        </button>
-        <button role="tab" className={`hq-tab ${tab === 'quotes' ? 'active' : ''}`} onClick={() => setTab('quotes')} disabled={!quotes}>
-          Quotes {quotes ? `(${quotes.length})` : ''}
-        </button>
-      </div>
+      {orderPlaced && (
+        <div className="hq-card" style={{ padding: 16, borderLeft: '3px solid var(--brand)', marginBottom: 12 }}>
+          <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--brand)' }}>
+            Order simulation complete. In production, this would send a quote request to the supplier(s).
+          </p>
+          <button className="hq-link" onClick={() => setOrderPlaced(false)} style={{ marginTop: 4 }}>Dismiss</button>
+        </div>
+      )}
 
-      {tab === 'order' && (
-        <>
-          <div className="hq-tabs" style={{ marginBottom: 12 }}>
-            {categories.map(cat => (
-              <button key={cat} className={`hq-tab ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>
-                {cat}
-              </button>
-            ))}
+      {/* Cart panel */}
+      {showCart && (
+        <div className="hq-card" style={{ marginBottom: 12, padding: 16 }}>
+          <div className="hq-card-head" style={{ padding: '0 0 10px' }}>
+            <h2>Shopping Cart</h2>
+            <button className="hq-link" onClick={() => setShowCart(false)}>Close</button>
           </div>
-
-          <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-            <div className="hq-card" style={{ flex: '1 1 400px', paddingBottom: 8 }}>
-              <div className="hq-card-head">
-                <h2>Products</h2>
-                <span className="hq-muted" style={{ fontSize: 13 }}>{filtered.length} items</span>
-              </div>
-              <div className="hq-trow hq-thead" style={{ gridTemplateColumns: 'minmax(0,1fr) 80px 56px' }}>
-                <div>Product</div>
-                <div style={{ textAlign: 'right' }}>Est. price</div>
-                <div />
-              </div>
-              {filtered.map(product => (
-                <div key={product.id} className="hq-trow" style={{ gridTemplateColumns: 'minmax(0,1fr) 80px 56px', cursor: 'default' }}>
-                  <div>
-                    <span style={{ fontWeight: 500 }}>{product.name}</span>
-                    <span className="hq-muted" style={{ display: 'block', fontSize: 12 }}>{product.category}</span>
+          {cartItems.length === 0 ? (
+            <p className="hq-empty">Your cart is empty</p>
+          ) : (
+            <>
+              {cartItems.map(item => (
+                <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--line)' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500 }}>{item.name}</div>
+                    <div className="hq-muted" style={{ fontSize: 12 }}>{item.supplier} — {fmtMoney(item.price)} each</div>
                   </div>
-                  <div style={{ textAlign: 'right', fontWeight: 500 }}>{fmtMoney(product.price)}</div>
-                  <div style={{ textAlign: 'center' }}>
-                    <button className="hq-btn-secondary" style={{ fontSize: 12, padding: '2px 10px' }} onClick={() => addItem(product.id)}>
-                      Add
-                    </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button className="hq-btn-secondary hq-btn-xs" onClick={() => updateQty(item.id, item.qty - 1)}>-</button>
+                    <span style={{ fontSize: 14, fontWeight: 500, minWidth: 20, textAlign: 'center' }}>{item.qty}</span>
+                    <button className="hq-btn-secondary hq-btn-xs" onClick={() => updateQty(item.id, item.qty + 1)}>+</button>
+                    <span style={{ fontSize: 14, fontWeight: 600, minWidth: 60, textAlign: 'right' }}>{fmtMoney(item.price * item.qty)}</span>
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div className="hq-card" style={{ flex: '0 1 320px', minWidth: 260, paddingBottom: 8 }}>
-              <div className="hq-card-head">
-                <h2>Your order</h2>
-                {order.length > 0 && <button className="hq-link" onClick={() => setOrder([])}>Clear</button>}
-              </div>
-
-              {order.length === 0 ? (
-                <p className="hq-empty">Add products to build your order, then request supplier quotes.</p>
-              ) : (
-                <>
-                  {order.map(item => {
-                    const product = productMap.get(item.id);
-                    if (!product) return null;
-                    return (
-                      <div key={item.id} className="hq-trow" style={{ gridTemplateColumns: 'minmax(0,1fr) 70px 80px 28px', cursor: 'default' }}>
-                        <div>
-                          <span style={{ fontWeight: 500, fontSize: 13 }}>{product.name}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <button onClick={() => updateQty(item.id, item.qty - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink)', fontSize: 16 }}>-</button>
-                          <span style={{ fontSize: 13, minWidth: 20, textAlign: 'center' }}>{item.qty}</span>
-                          <button onClick={() => updateQty(item.id, item.qty + 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink)', fontSize: 16 }}>+</button>
-                        </div>
-                        <div style={{ textAlign: 'right', fontWeight: 500, fontSize: 13 }}>{fmtMoney(product.price * item.qty)}</div>
-                        <div style={{ textAlign: 'center' }}>
-                          <button onClick={() => removeItem(item.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: 16, fontWeight: 700 }} aria-label={`Remove ${product.name}`}>x</button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px 8px', borderTop: '1px solid var(--line)', marginTop: 4 }}>
-                    <span style={{ fontWeight: 600, fontSize: 14 }}>Estimated total</span>
-                    <span style={{ fontWeight: 700, fontSize: 16, color: 'var(--brand)' }}>{fmtMoney(grandTotal)}</span>
-                  </div>
-                  <div style={{ padding: '0 16px 8px' }}>
-                    <button className="hq-btn-primary" onClick={handleRequestQuotes} disabled={loading} style={{ width: '100%' }}>
-                      {loading ? 'Getting quotes...' : 'Request supplier quotes'}
-                    </button>
-                    <p style={{ fontSize: 11, color: 'var(--muted)', textAlign: 'center', marginTop: 6 }}>
-                      Demo mode — simulated quotes from seeded suppliers
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </>
-      )}
-
-      {tab === 'quotes' && quotes && (
-        <div>
-          <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 12 }}>
-            Quotes ranked by price (40%), availability (35%), and delivery speed (25%). These are simulated demo quotes.
-          </p>
-
-          {quotes.map((q, rank) => (
-            <div key={q.supplier_id} className="hq-card" style={{ padding: 16, marginBottom: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <div>
-                  <span style={{
-                    display: 'inline-block', padding: '2px 8px', borderRadius: 10, fontSize: 11,
-                    fontWeight: 600, marginRight: 8,
-                    background: rank === 0 ? 'var(--strong)' : 'var(--muted)', color: '#fff',
-                  }}>
-                    #{rank + 1}
-                  </span>
-                  <span style={{ fontSize: 16, fontWeight: 600 }}>{q.supplier_name}</span>
-                </div>
-                <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--brand)' }}>{fmtMoney(q.total)}</span>
-              </div>
-
-              <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>
-                <span>Score: {q.score.toFixed(1)}</span>
-                <span>Delivery: {q.delivery_fee > 0 ? fmtMoney(q.delivery_fee) : 'Free'}</span>
-                <span>{q.items.filter(i => i.available).length}/{q.items.length} items available</span>
-              </div>
-
-              <div style={{ fontSize: 12 }}>
-                {q.items.map((qi, i) => {
-                  const product = productMap.get(qi.product_id);
-                  const orderItem = order.find(o => o.id === qi.product_id);
-                  return (
-                    <div key={qi.product_id} style={{
-                      display: 'flex', justifyContent: 'space-between', padding: '4px 0',
-                      borderBottom: i < q.items.length - 1 ? '1px solid var(--line)' : 'none',
-                      opacity: qi.available ? 1 : 0.5,
-                    }}>
-                      <span>
-                        {product?.name ?? qi.product_id}
-                        {!qi.available && <span style={{ color: 'var(--weak-text)', marginLeft: 6 }}>(unavailable)</span>}
-                      </span>
-                      <span>
-                        {qi.available ? `${orderItem?.qty ?? 1} x ${fmtMoney(qi.unit_price)} = ${fmtMoney(qi.unit_price * (orderItem?.qty ?? 1))}` : '—'}
-                        <span style={{ color: 'var(--muted)', marginLeft: 8 }}>{qi.lead_days}d</span>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div style={{ marginTop: 10 }}>
-                <button className="hq-btn-secondary" style={{ width: '100%', fontSize: 13 }} disabled>
-                  Accept quote (coming soon)
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+                <span style={{ fontSize: 16, fontWeight: 600 }}>Total: {fmtMoney(cartTotal)}</span>
+                <button className="hq-btn-primary" onClick={placeOrder} style={{ minHeight: 40 }}>
+                  Request Quote
                 </button>
-                <p style={{ fontSize: 11, color: 'var(--muted)', textAlign: 'center', marginTop: 4 }}>
-                  No real orders or emails will be sent without your confirmation
-                </p>
               </div>
-            </div>
-          ))}
-
-          <button className="hq-btn-secondary" onClick={() => setTab('order')} style={{ width: '100%' }}>
-            Back to order builder
-          </button>
+              <p className="hq-muted" style={{ fontSize: 11, marginTop: 6 }}>
+                Demo mode — no real orders will be placed or emails sent.
+              </p>
+            </>
+          )}
         </div>
       )}
+
+      {/* Category filter */}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '12px 0' }}>
+        {(['All', ...SETTINGS.shop.categories] as ShopCategory[]).map(cat => (
+          <button
+            key={cat}
+            className={filter === cat ? 'hq-btn-primary hq-btn-sm' : 'hq-btn-secondary hq-btn-sm'}
+            onClick={() => setFilter(cat)}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Product grid */}
+      <div className="hq-shop-grid">
+        {filtered.map(p => {
+          const inCart = cart.get(p.id);
+          return (
+            <div key={p.id} className="hq-card hq-shop-item">
+              <div className="hq-shop-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  {p.category === 'Feed' && <><path d="M12 2a10 10 0 0 0-6.88 17.23l.9-3.23A7 7 0 0 1 12 4" /><circle cx="12" cy="12" r="3" /></>}
+                  {p.category === 'Treatments' && <><path d="M8 2h8l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6l4-4z" /><path d="M12 10v6M9 13h6" /></>}
+                  {p.category === 'Equipment' && <><rect x="2" y="6" width="20" height="12" rx="2" /><path d="M6 6V4h12v2" /></>}
+                  {p.category === 'Protective gear' && <><circle cx="12" cy="8" r="5" /><path d="M5 21v-2a7 7 0 0 1 14 0v2" /></>}
+                </svg>
+              </div>
+              <div className="hq-shop-info">
+                <span className="hq-shop-name">{p.name}</span>
+                <span className="hq-shop-supplier">{p.supplier}</span>
+                <span className="hq-shop-cat">{p.category}</span>
+              </div>
+              <div className="hq-shop-footer">
+                <span className="hq-shop-price">{fmtMoney(p.price)}</span>
+                {inCart ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <button className="hq-btn-secondary hq-btn-xs" onClick={() => updateQty(p.id, inCart.qty - 1)}>-</button>
+                    <span style={{ fontSize: 13, fontWeight: 600, minWidth: 18, textAlign: 'center' }}>{inCart.qty}</span>
+                    <button className="hq-btn-secondary hq-btn-xs" onClick={() => updateQty(p.id, inCart.qty + 1)}>+</button>
+                  </div>
+                ) : (
+                  <button className="hq-btn-primary hq-btn-sm" onClick={() => addToCart(p)}>Add</button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </>
   );
 }

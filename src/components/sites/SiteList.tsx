@@ -19,6 +19,11 @@ export default function SiteList() {
   const { sites, loading, refetch } = useOverviewData();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const filtered = sites.filter(s =>
+    s.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <>
@@ -42,6 +47,16 @@ export default function SiteList() {
       <div className="hq-card" style={{ paddingBottom: 8 }}>
         <div className="hq-card-head">
           <h2>All sites</h2>
+          <div className="hq-search-wrap">
+            <svg className="hq-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+            <input
+              type="search"
+              className="hq-search"
+              placeholder="Search sites..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
         </div>
         {loading ? (
           <p className="hq-empty">Loading...</p>
@@ -59,7 +74,7 @@ export default function SiteList() {
               <div>Strength</div>
               <div>Status</div>
             </div>
-            {sites.map((s) => (
+            {filtered.map((s) => (
               <button key={s.id} className="hq-trow hq-cols-sites" onClick={() => navigate(`/sites/${s.id}`)}>
                 <div className="hq-c-site">
                   <span className="hq-site-name">{s.name}</span>

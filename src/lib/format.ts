@@ -14,9 +14,7 @@ export function fmtDateShort(d: string | null): string {
 
 export function queenAge(year: number | null): string {
   if (!year) return '-';
-  const age = new Date().getFullYear() - year;
-  if (age === 0) return 'New';
-  return `${age}yr`;
+  return String(year);
 }
 
 export function fmtMoney(n: number): string {

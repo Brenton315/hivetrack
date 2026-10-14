@@ -39,6 +39,13 @@ interface ParseRequest {
   notes: string[];
 }
 
+function extractText(
+  content: Array<{ type: string; text?: string }>,
+): string | null {
+  const textBlock = content?.find((b) => b.type === "text");
+  return textBlock?.text ?? null;
+}
+
 function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
@@ -116,7 +123,7 @@ Deno.serve(async (req) => {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-haiku-5-5",
         max_tokens: MAX_TOKENS,
         system: SYSTEM_PROMPT,
         messages: [
@@ -140,7 +147,7 @@ Deno.serve(async (req) => {
     }
 
     const result = await response.json();
-    const content = result.content?.[0]?.text ?? "[]";
+    const content = extractText(result.content) ?? "[]";
 
     let parsed;
     try {
