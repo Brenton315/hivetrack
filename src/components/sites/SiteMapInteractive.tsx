@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTheme } from '../../lib/theme';
-import { supabase } from '../../lib/supabase';
 import type { Hive } from '../../lib/database.types';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';

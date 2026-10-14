@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Hive } from '../../lib/database.types';
-import { SETTINGS } from '../../lib/settings';
 
 interface Props {
   hive: Hive;

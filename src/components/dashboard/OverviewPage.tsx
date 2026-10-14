@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOverviewData, useAllEvents, useAuth } from '../../lib/hooks';
-import { fmtDateShort, fmtMoney } from '../../lib/format';
+import { fmtDateShort } from '../../lib/format';
 import { statusLabel } from '../../lib/strength';
 import Logo from '../layout/Logo';
 import DashboardMap from './DashboardMap';
