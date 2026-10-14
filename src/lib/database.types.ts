@@ -151,3 +151,32 @@ export interface Harvest {
   notes: string | null;
   created_at: string;
 }
+
+export type InventoryCategory = 'feed' | 'treatment' | 'equipment' | 'protective_gear' | 'other';
+
+export interface InventoryItem {
+  id: string;
+  user_id: string;
+  product_name: string;
+  category: InventoryCategory;
+  quantity: number;
+  unit: string;
+  min_stock: number;
+  supplier: string | null;
+  cost_per_unit: number;
+  last_restocked: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface InventoryUsage {
+  id: string;
+  user_id: string;
+  inventory_id: string;
+  quantity_used: number;
+  used_date: string;
+  site_id: string | null;
+  hive_id: string | null;
+  notes: string | null;
+  created_at: string;
+}

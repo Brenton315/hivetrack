@@ -8,6 +8,7 @@ import SiteList from './components/sites/SiteList';
 import SiteDetail from './components/sites/SiteDetail';
 import HiveDetail from './components/hives/HiveDetail';
 import EconomicsPage from './components/economics/EconomicsPage';
+import InventoryPage from './components/inventory/InventoryPage';
 import ShopPage from './components/shop/ShopPage';
 import ChartsPage from './components/charts/ChartsPage';
 import QueenPage from './components/queens/QueenPage';
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="/sites/:id" element={<SiteDetail />} />
             <Route path="/hives/:id" element={<HiveDetail />} />
             <Route path="/economics" element={<EconomicsPage />} />
+            <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/analysis" element={<ChartsPage />} />
             <Route path="/queens" element={<QueenPage />} />

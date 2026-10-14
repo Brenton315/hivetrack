@@ -8,6 +8,7 @@ const tabs = [
 ];
 
 const moreItems = [
+  { path: '/inventory', label: 'Inventory' },
   { path: '/queens', label: 'Queens' },
   { path: '/shop', label: 'Marketplace' },
   { path: '/analysis', label: 'Analysis' },
