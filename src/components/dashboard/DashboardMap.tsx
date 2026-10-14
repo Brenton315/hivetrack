@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../lib/theme';
 import { statusLabel } from '../../lib/strength';
+import { getBasemapStyle, getFallbackStyle } from '../../lib/basemap';
 import type { SiteOverview } from '../../lib/hooks';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -19,23 +20,32 @@ export default function DashboardMap({ sites }: { sites: SiteOverview[] }) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const [ready, setReady] = useState(false);
-
-  const basemap = theme === 'dark'
-    ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
-    : 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!containerRef.current) return;
+    setError('');
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: basemap,
-      center: [175.4, -41.1],
-      zoom: 8,
-    });
+    let map: maplibregl.Map;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style: getBasemapStyle(theme),
+        center: [175.4, -41.1],
+        zoom: 8,
+      });
+    } catch (e) {
+      setError('Map failed to load');
+      return;
+    }
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
     map.on('load', () => setReady(true));
+    map.on('error', () => {
+      map.setStyle(getFallbackStyle());
+    });
+
     mapRef.current = map;
 
     return () => {
@@ -43,7 +53,7 @@ export default function DashboardMap({ sites }: { sites: SiteOverview[] }) {
       mapRef.current = null;
       setReady(false);
     };
-  }, [basemap]);
+  }, [theme]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -100,7 +110,13 @@ export default function DashboardMap({ sites }: { sites: SiteOverview[] }) {
           {sites.filter(s => s.lat && s.lng).length} mapped
         </span>
       </div>
-      <div ref={containerRef} className="hq-dashboard-map" />
+      <div ref={containerRef} className="hq-dashboard-map">
+        {error && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--muted)', fontSize: 13 }}>
+            {error}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

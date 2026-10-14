@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useOverviewData } from '../../lib/hooks';
 import { useTheme } from '../../lib/theme';
 import { statusLabel } from '../../lib/strength';
+import { getBasemapStyle, getFallbackStyle } from '../../lib/basemap';
 import Logo from '../layout/Logo';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -22,17 +23,13 @@ export default function MapPage() {
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const [mapReady, setMapReady] = useState(false);
 
-  const basemap = theme === 'dark'
-    ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
-    : 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
-
   // Initialise map
   useEffect(() => {
     if (!mapContainer.current) return;
 
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: basemap,
+      style: getBasemapStyle(theme),
       center: [175.4, -41.1],
       zoom: 9,
     });
@@ -40,6 +37,7 @@ export default function MapPage() {
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
     map.on('load', () => setMapReady(true));
+    map.on('error', () => map.setStyle(getFallbackStyle()));
     mapRef.current = map;
 
     return () => {
@@ -47,8 +45,7 @@ export default function MapPage() {
       mapRef.current = null;
       setMapReady(false);
     };
-    // Re-create map when theme changes
-  }, [basemap]);
+  }, [theme]);
 
   // Add markers when data + map are ready
   useEffect(() => {
