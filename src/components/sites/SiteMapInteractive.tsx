@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTheme } from '../../lib/theme';
+import { getBasemapStyle, getFallbackStyle } from '../../lib/basemap';
 import type { Hive } from '../../lib/database.types';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -28,6 +29,7 @@ export default function SiteMapInteractive({ siteLat, siteLng, hives, onHiveClic
   const apiKey = import.meta.env.VITE_LINZ_API_KEY as string | undefined;
   const { theme } = useTheme();
   const [is3D, setIs3D] = useState(false);
+  const [error, setError] = useState('');
 
   const initMap = useCallback(() => {
     if (!containerRef.current) return;
@@ -36,6 +38,7 @@ export default function SiteMapInteractive({ siteLat, siteLng, hives, onHiveClic
       mapRef.current = null;
     }
     markersRef.current.clear();
+    setError('');
 
     const style = apiKey
       ? {
@@ -50,20 +53,26 @@ export default function SiteMapInteractive({ siteLat, siteLng, hives, onHiveClic
           },
           layers: [{ id: 'linz-aerial-layer', type: 'raster' as const, source: 'linz-aerial', minzoom: 0, maxzoom: 22 }],
         }
-      : `https://basemaps.cartocdn.com/gl/${theme === 'dark' ? 'dark-matter' : 'positron'}-gl-style/style.json`;
+      : getBasemapStyle(theme);
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style,
-      center: [siteLng, siteLat],
-      zoom: 17,
-      pitch: is3D ? 45 : 0,
-      attributionControl: {},
-    });
+    let map: maplibregl.Map;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style,
+        center: [siteLng, siteLat],
+        zoom: 17,
+        pitch: is3D ? 45 : 0,
+        attributionControl: {},
+      });
+    } catch (e) {
+      setError('Map failed to load');
+      return;
+    }
 
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.on('error', () => map.setStyle(getFallbackStyle()));
 
-    // Site center marker
     const siteEl = document.createElement('div');
     siteEl.className = 'hq-site-center-marker';
     siteEl.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="4 2"/></svg>';
@@ -71,7 +80,6 @@ export default function SiteMapInteractive({ siteLat, siteLng, hives, onHiveClic
       .setLngLat([siteLng, siteLat])
       .addTo(map);
 
-    // Add hive markers
     const activeHives = hives.filter(h => h.status === 'active');
     for (const hive of activeHives) {
       const lat = hive.hive_lat ?? siteLat + (Math.random() - 0.5) * 0.001;
@@ -122,16 +130,13 @@ export default function SiteMapInteractive({ siteLat, siteLng, hives, onHiveClic
     return cleanup;
   }, [initMap]);
 
-  // Update markers when hives change without re-creating map
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
 
-    // Remove old markers
     markersRef.current.forEach(m => m.remove());
     markersRef.current.clear();
 
-    // Add new markers
     const activeHives = hives.filter(h => h.status === 'active');
     for (const hive of activeHives) {
       const lat = hive.hive_lat ?? siteLat + (Math.random() - 0.5) * 0.001;
@@ -142,7 +147,13 @@ export default function SiteMapInteractive({ siteLat, siteLng, hives, onHiveClic
 
   return (
     <div style={{ position: 'relative' }}>
-      <div className="hq-site-map-interactive" ref={containerRef} />
+      <div className="hq-site-map-interactive" ref={containerRef}>
+        {error && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--muted)', fontSize: 13 }}>
+            {error}
+          </div>
+        )}
+      </div>
       <div className="hq-map-controls">
         <button
           type="button"

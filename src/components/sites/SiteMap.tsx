@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../../lib/theme';
+import { getBasemapStyle, getFallbackStyle } from '../../lib/basemap';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -13,6 +14,7 @@ export default function SiteMap({ lat, lng }: Props) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const apiKey = import.meta.env.VITE_LINZ_API_KEY as string | undefined;
   const { theme } = useTheme();
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -20,6 +22,7 @@ export default function SiteMap({ lat, lng }: Props) {
       mapRef.current.remove();
       mapRef.current = null;
     }
+    setError('');
 
     const style = apiKey
       ? {
@@ -34,19 +37,32 @@ export default function SiteMap({ lat, lng }: Props) {
           },
           layers: [{ id: 'linz-aerial-layer', type: 'raster' as const, source: 'linz-aerial', minzoom: 0, maxzoom: 22 }],
         }
-      : `https://basemaps.cartocdn.com/gl/${theme === 'dark' ? 'dark-matter' : 'positron'}-gl-style/style.json`;
+      : getBasemapStyle(theme);
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style,
-      center: [lng, lat],
-      zoom: 15,
-      attributionControl: {},
-    });
+    let map: maplibregl.Map;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style,
+        center: [lng, lat],
+        zoom: 15,
+        attributionControl: {},
+      });
+    } catch (e) {
+      setError('Map failed to load');
+      return;
+    }
 
     new maplibregl.Marker({ color: '#1D4A38' })
       .setLngLat([lng, lat])
       .addTo(map);
+
+    map.on('error', () => {
+      map.setStyle(getFallbackStyle());
+      new maplibregl.Marker({ color: '#1D4A38' })
+        .setLngLat([lng, lat])
+        .addTo(map);
+    });
 
     mapRef.current = map;
 
@@ -61,6 +77,11 @@ export default function SiteMap({ lat, lng }: Props) {
       {!apiKey && (
         <div style={{ position: 'absolute', bottom: 8, left: 8, fontSize: 12, color: 'var(--muted)', zIndex: 1 }}>
           {lat.toFixed(4)}, {lng.toFixed(4)}
+        </div>
+      )}
+      {error && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--muted)', fontSize: 13 }}>
+          {error}
         </div>
       )}
     </div>
