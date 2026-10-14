@@ -53,7 +53,6 @@ export default function SiteDetail() {
   const [movingHive, setMovingHive] = useState<Hive | null>(null);
   const [showBulkInspection, setShowBulkInspection] = useState(false);
   const [selectedHiveId, setSelectedHiveId] = useState<string | null>(null);
-  const [hiveAction, setHiveAction] = useState<string | null>(null);
 
   const activeHives = useMemo(() => hives.filter(h => h.status === 'active'), [hives]);
 
@@ -90,7 +89,6 @@ export default function SiteDetail() {
 
   const handleMapHiveClick = (hive: Hive) => {
     setSelectedHiveId(hive.id);
-    setHiveAction(null);
   };
 
   const selectedHive = activeHives.find(h => h.id === selectedHiveId) ?? null;
