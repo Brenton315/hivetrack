@@ -9,6 +9,10 @@ export interface Site {
   created_at: string;
 }
 
+export type HiveStatus = 'active' | 'dead' | 'merged' | 'deleted' | 'sold';
+export type DeletionReason = 'disease' | 'merged' | 'died' | 'sold' | 'other';
+export type DeletionDisease = 'AFB' | 'EFB' | 'nosema' | 'varroa' | 'chalkbrood' | 'other';
+
 export interface Hive {
   id: string;
   user_id: string;
@@ -17,6 +21,12 @@ export interface Hive {
   queen_breed: string | null;
   queen_year: number | null;
   notes: string | null;
+  hive_lat: number | null;
+  hive_lng: number | null;
+  status: HiveStatus;
+  deleted_at: string | null;
+  deletion_reason: DeletionReason | null;
+  deletion_disease: DeletionDisease | null;
   created_at: string;
 }
 
